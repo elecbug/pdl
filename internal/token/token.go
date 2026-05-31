@@ -8,6 +8,7 @@ const (
 
 	TokenIdent  TokenType = "IDENT"
 	TokenNumber TokenType = "NUMBER"
+	TokenString TokenType = "STRING"
 
 	TokenPacket TokenType = "packet"
 	TokenSet    TokenType = "set"

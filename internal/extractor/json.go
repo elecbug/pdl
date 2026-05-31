@@ -25,21 +25,26 @@ func BuildJSON(doc *ast.Document, result *decoder.DecodeResult) (any, error) {
 				return nil, err
 			}
 
+			key := strconv.FormatUint(bit, 10)
 			outValue = bit
 
 			if rule.Map != nil {
-				key := strconv.FormatUint(bit, 10)
-
 				if mapped, ok := rule.Map[key]; ok {
 					outValue = convertMappedValue(mapped)
 				}
+			}
+		} else if rule.Map != nil {
+			key := strconv.FormatUint(value.UInt, 10)
+			outValue = value.UInt
+
+			if mapped, ok := rule.Map[key]; ok {
+				outValue = convertMappedValue(mapped)
 			}
 		} else {
 			formatted, err := FormatValue(value, rule.Format)
 			if err != nil {
 				return nil, err
 			}
-
 			outValue = formatted
 		}
 

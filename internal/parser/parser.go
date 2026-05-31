@@ -355,22 +355,38 @@ func (p *Parser) parseMapBlock() (map[string]string, error) {
 	m := make(map[string]string)
 
 	for p.cur.Type != token.TokenRBrace && p.cur.Type != token.TokenEOF {
-		key := p.cur.Lit
+		var key string
 
-		if p.cur.Type != token.TokenNumber && p.cur.Type != token.TokenIdent {
+		switch p.cur.Type {
+		case token.TokenNumber:
+			v, err := parseNumber(p.cur.Lit)
+			if err != nil {
+				return nil, p.errf("invalid map key %q", p.cur.Lit)
+			}
+			key = strconv.FormatInt(v, 10)
+
+		case token.TokenIdent:
+			key = p.cur.Lit
+
+		default:
 			return nil, p.errf("expected map key, got %s %q", p.cur.Type, p.cur.Lit)
 		}
+
 		p.next()
 
 		if err := p.expect(token.TokenColon); err != nil {
 			return nil, err
 		}
 
-		if p.cur.Type != token.TokenIdent && p.cur.Type != token.TokenNumber {
+		var val string
+
+		switch p.cur.Type {
+		case token.TokenString, token.TokenIdent, token.TokenNumber:
+			val = p.cur.Lit
+		default:
 			return nil, p.errf("expected map value, got %s %q", p.cur.Type, p.cur.Lit)
 		}
 
-		val := p.cur.Lit
 		m[key] = val
 		p.next()
 	}

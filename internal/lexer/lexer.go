@@ -72,6 +72,12 @@ func (l *Lexer) NextToken() token.Token {
 	case '=':
 		l.advance()
 		return token.Token{Type: token.TokenEqual, Lit: "=", Line: startLine, Col: startCol}
+	case '"':
+		lit, err := l.readString()
+		if err != nil {
+			return token.Token{Type: token.TokenIllegal, Lit: err.Error(), Line: startLine, Col: startCol}
+		}
+		return token.Token{Type: token.TokenString, Lit: lit, Line: startLine, Col: startCol}
 	}
 
 	if isIdentStart(ch) {
@@ -100,6 +106,27 @@ func (l *Lexer) NextToken() token.Token {
 		Lit:  fmt.Sprintf("%c", ch),
 		Line: startLine,
 		Col:  startCol,
+	}
+}
+
+func (l *Lexer) readString() (string, error) {
+	l.advance() // skip opening "
+
+	start := l.pos
+
+	for {
+		ch := l.peek()
+		if ch == 0 || ch == '\n' {
+			return "", fmt.Errorf("unterminated string")
+		}
+
+		if ch == '"' {
+			lit := string(l.input[start:l.pos])
+			l.advance() // skip closing "
+			return lit, nil
+		}
+
+		l.advance()
 	}
 }
 
