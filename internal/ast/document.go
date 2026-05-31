@@ -8,7 +8,7 @@ type Document struct {
 
 	Vars    []Var
 	Defs    []Def
-	Outputs []Output
+	Outputs []Out
 }
 
 type Var struct {
@@ -28,7 +28,7 @@ type Def struct {
 	UseTo     bool
 }
 
-type Output struct {
+type Out struct {
 	Field  string
 	Path   string
 	Format string

@@ -133,6 +133,55 @@ func (p *Parser) parseSetMode(doc *ast.Document) error {
 	return nil
 }
 
+func (p *Parser) parseVarBlock() ([]ast.Var, error) {
+	if err := p.expect(token.TokenVar); err != nil {
+		return nil, err
+	}
+
+	if err := p.expect(token.TokenLBrace); err != nil {
+		return nil, err
+	}
+
+	var vars []ast.Var
+
+	for p.cur.Type != token.TokenRBrace && p.cur.Type != token.TokenEOF {
+		v, err := p.parseVarLine()
+		if err != nil {
+			return nil, err
+		}
+		vars = append(vars, v)
+	}
+
+	if err := p.expect(token.TokenRBrace); err != nil {
+		return nil, err
+	}
+
+	return vars, nil
+}
+
+func (p *Parser) parseVarLine() (ast.Var, error) {
+	if p.cur.Type != token.TokenIdent {
+		return ast.Var{}, p.errf("expected variable name, got %s %q", p.cur.Type, p.cur.Lit)
+	}
+
+	name := p.cur.Lit
+	p.next()
+
+	if err := p.expect(token.TokenEqual); err != nil {
+		return ast.Var{}, err
+	}
+
+	expr, err := p.parseExpr(0)
+	if err != nil {
+		return ast.Var{}, err
+	}
+
+	return ast.Var{
+		Name: name,
+		Expr: expr,
+	}, nil
+}
+
 func (p *Parser) parseDefBlock() ([]ast.Def, error) {
 	if err := p.expect(token.TokenDef); err != nil {
 		return nil, err
@@ -207,7 +256,7 @@ func (p *Parser) parseDefLine() (ast.Def, error) {
 	return def, nil
 }
 
-func (p *Parser) parseOutBlock() ([]ast.Output, error) {
+func (p *Parser) parseOutBlock() ([]ast.Out, error) {
 	if err := p.expect(token.TokenOut); err != nil {
 		return nil, err
 	}
@@ -220,7 +269,7 @@ func (p *Parser) parseOutBlock() ([]ast.Output, error) {
 		return nil, err
 	}
 
-	var outs []ast.Output
+	var outs []ast.Out
 
 	for p.cur.Type != token.TokenRBrace && p.cur.Type != token.TokenEOF {
 		out, err := p.parseOutLine()
@@ -237,12 +286,12 @@ func (p *Parser) parseOutBlock() ([]ast.Output, error) {
 	return outs, nil
 }
 
-func (p *Parser) parseOutLine() (ast.Output, error) {
+func (p *Parser) parseOutLine() (ast.Out, error) {
 	if p.cur.Type != token.TokenIdent {
-		return ast.Output{}, p.errf("expected field name in out block, got %s %q", p.cur.Type, p.cur.Lit)
+		return ast.Out{}, p.errf("expected field name in out block, got %s %q", p.cur.Type, p.cur.Lit)
 	}
 
-	out := ast.Output{
+	out := ast.Out{
 		Field: p.cur.Lit,
 	}
 
@@ -252,12 +301,12 @@ func (p *Parser) parseOutLine() (ast.Output, error) {
 		p.next()
 
 		if p.cur.Type != token.TokenNumber {
-			return ast.Output{}, p.errf("expected bit index number")
+			return ast.Out{}, p.errf("expected bit index number")
 		}
 
 		v, err := parseNumber(p.cur.Lit)
 		if err != nil {
-			return ast.Output{}, p.errf("invalid bit index %q", p.cur.Lit)
+			return ast.Out{}, p.errf("invalid bit index %q", p.cur.Lit)
 		}
 
 		idx := int(v)
@@ -265,12 +314,12 @@ func (p *Parser) parseOutLine() (ast.Output, error) {
 		p.next()
 
 		if err := p.expect(token.TokenRAngle); err != nil {
-			return ast.Output{}, err
+			return ast.Out{}, err
 		}
 	}
 
 	if p.cur.Type != token.TokenIdent {
-		return ast.Output{}, p.errf("expected output path, got %s %q", p.cur.Type, p.cur.Lit)
+		return ast.Out{}, p.errf("expected output path, got %s %q", p.cur.Type, p.cur.Lit)
 	}
 
 	out.Path = p.cur.Lit
@@ -289,13 +338,13 @@ func (p *Parser) parseOutLine() (ast.Output, error) {
 	if p.cur.Type == token.TokenLBrace {
 		m, err := p.parseMapBlock()
 		if err != nil {
-			return ast.Output{}, err
+			return ast.Out{}, err
 		}
 		out.Map = m
 		return out, nil
 	}
 
-	return ast.Output{}, p.errf("expected format or map block in out line, got %s %q", p.cur.Type, p.cur.Lit)
+	return ast.Out{}, p.errf("expected format or map block in out line, got %s %q", p.cur.Type, p.cur.Lit)
 }
 
 func (p *Parser) parseMapBlock() (map[string]string, error) {
@@ -331,23 +380,6 @@ func (p *Parser) parseMapBlock() (map[string]string, error) {
 	}
 
 	return m, nil
-}
-
-const (
-	precLowest = iota
-	precSum
-	precProduct
-)
-
-func precedence(t token.TokenType) int {
-	switch t {
-	case token.TokenPlus, token.TokenMinus:
-		return precSum
-	case token.TokenStar, token.TokenSlash:
-		return precProduct
-	default:
-		return precLowest
-	}
 }
 
 func (p *Parser) parseExpr(minPrec int) (ast.Expr, error) {
@@ -458,53 +490,4 @@ func (p *Parser) expect(t token.TokenType) error {
 func (p *Parser) errf(format string, args ...any) error {
 	msg := fmt.Sprintf(format, args...)
 	return fmt.Errorf("parse error at %d:%d: %s", p.cur.Line, p.cur.Col, msg)
-}
-
-func (p *Parser) parseVarBlock() ([]ast.Var, error) {
-	if err := p.expect(token.TokenVar); err != nil {
-		return nil, err
-	}
-
-	if err := p.expect(token.TokenLBrace); err != nil {
-		return nil, err
-	}
-
-	var vars []ast.Var
-
-	for p.cur.Type != token.TokenRBrace && p.cur.Type != token.TokenEOF {
-		v, err := p.parseVarLine()
-		if err != nil {
-			return nil, err
-		}
-		vars = append(vars, v)
-	}
-
-	if err := p.expect(token.TokenRBrace); err != nil {
-		return nil, err
-	}
-
-	return vars, nil
-}
-
-func (p *Parser) parseVarLine() (ast.Var, error) {
-	if p.cur.Type != token.TokenIdent {
-		return ast.Var{}, p.errf("expected variable name, got %s %q", p.cur.Type, p.cur.Lit)
-	}
-
-	name := p.cur.Lit
-	p.next()
-
-	if err := p.expect(token.TokenEqual); err != nil {
-		return ast.Var{}, err
-	}
-
-	expr, err := p.parseExpr(0)
-	if err != nil {
-		return ast.Var{}, err
-	}
-
-	return ast.Var{
-		Name: name,
-		Expr: expr,
-	}, nil
 }
