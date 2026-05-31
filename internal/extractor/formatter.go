@@ -12,6 +12,9 @@ import (
 func FormatValue(v decoder.Value, format string) (any, error) {
 	switch format {
 	case "DEC":
+		if v.Len > 64 {
+			return nil, fmt.Errorf("DEC requires <= 64 bits, got %d", v.Len)
+		}
 		return v.UInt, nil
 
 	case "HEX":

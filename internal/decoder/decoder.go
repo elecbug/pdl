@@ -101,9 +101,13 @@ func (c *decodeContext) decodeDef(def ast.Def) error {
 
 	bits := extractBits(c.data, from, length)
 
-	u, err := bitsToUint(bits, length, c.doc.ByteOrder)
-	if err != nil {
-		return fmt.Errorf("decode %s: %w", def.Name, err)
+	var u uint64
+
+	if length <= 64 {
+		u, err = bitsToUint(bits, length, c.doc.ByteOrder)
+		if err != nil {
+			return fmt.Errorf("decode %s: %w", def.Name, err)
+		}
 	}
 
 	c.values[def.Name] = Value{
