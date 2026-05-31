@@ -1,4 +1,4 @@
-package ast
+package document
 
 type Expr interface {
 	exprNode()

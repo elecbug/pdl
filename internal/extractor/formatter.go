@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/elecbug/pdl/internal/ast"
 	"github.com/elecbug/pdl/internal/decoder"
+	"github.com/elecbug/pdl/internal/document/order"
 )
 
 func FormatValue(v decoder.Value, format string) (any, error) {
@@ -34,17 +34,17 @@ func FormatValue(v decoder.Value, format string) (any, error) {
 	}
 }
 
-func GetBit(v decoder.Value, idx int, bitOrder ast.BitOrder) (uint64, error) {
+func GetBit(v decoder.Value, idx int, bitOrder order.BitOrder) (uint64, error) {
 	if idx < 0 || int64(idx) >= v.Len {
 		return 0, fmt.Errorf("bit index %d out of range for %q", idx, v.Name)
 	}
 
 	switch bitOrder {
-	case ast.MSB_FIRST:
+	case order.MSB_FIRST:
 		shift := v.Len - int64(idx) - 1
 		return (v.UInt >> shift) & 1, nil
 
-	case ast.LSB_FIRST:
+	case order.LSB_FIRST:
 		return (v.UInt >> idx) & 1, nil
 
 	default:

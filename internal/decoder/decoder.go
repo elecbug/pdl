@@ -3,7 +3,7 @@ package decoder
 import (
 	"fmt"
 
-	"github.com/elecbug/pdl/internal/ast"
+	"github.com/elecbug/pdl/internal/document"
 )
 
 type Value struct {
@@ -21,7 +21,7 @@ type DecodeResult struct {
 	Values map[string]Value
 }
 
-func Decode(doc *ast.Document, data []byte) (*DecodeResult, error) {
+func Decode(doc *document.Document, data []byte) (*DecodeResult, error) {
 	ctx := &decodeContext{
 		doc:    doc,
 		data:   data,
@@ -50,13 +50,13 @@ func Decode(doc *ast.Document, data []byte) (*DecodeResult, error) {
 }
 
 type decodeContext struct {
-	doc    *ast.Document
+	doc    *document.Document
 	data   []byte
 	values map[string]Value
 	vars   map[string]int64
 }
 
-func (c *decodeContext) decodeDef(def ast.Def) error {
+func (c *decodeContext) decodeDef(def document.Def) error {
 	from, err := c.evalExpr(def.From)
 	if err != nil {
 		return fmt.Errorf("decode %s from: %w", def.Name, err)
@@ -75,7 +75,7 @@ func (c *decodeContext) decodeDef(def ast.Def) error {
 			return fmt.Errorf("decode %s to: %w", def.Name, err)
 		}
 
-		if _, ok := def.To.(ast.EndExpr); ok {
+		if _, ok := def.To.(document.EndExpr); ok {
 			length = int64(len(c.data))*8 - from
 		} else {
 			length = to - from + 1
@@ -120,29 +120,29 @@ func (c *decodeContext) decodeDef(def ast.Def) error {
 	return nil
 }
 
-func (c *decodeContext) evalExpr(expr ast.Expr) (int64, error) {
+func (c *decodeContext) evalExpr(expr document.Expr) (int64, error) {
 	switch e := expr.(type) {
-	case ast.NumberExpr:
+	case document.NumberExpr:
 		return e.Value, nil
 
-	case ast.IdentExpr:
+	case document.IdentExpr:
 		v, ok := c.vars[e.Name]
 		if !ok {
 			return 0, fmt.Errorf("undefined variable %q", e.Name)
 		}
 		return v, nil
 
-	case ast.FieldValueExpr:
+	case document.FieldValueExpr:
 		v, ok := c.values[e.Name]
 		if !ok {
 			return 0, fmt.Errorf("field %q is not decoded yet", e.Name)
 		}
 		return int64(v.UInt), nil
 
-	case ast.EndExpr:
+	case document.EndExpr:
 		return int64(len(c.data))*8 - 1, nil
 
-	case ast.BinaryExpr:
+	case document.BinaryExpr:
 		left, err := c.evalExpr(e.Left)
 		if err != nil {
 			return 0, err

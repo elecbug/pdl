@@ -5,7 +5,8 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/elecbug/pdl/internal/ast"
+	"github.com/elecbug/pdl/internal/document"
+	"github.com/elecbug/pdl/internal/document/order"
 	"github.com/elecbug/pdl/internal/lexer"
 	"github.com/elecbug/pdl/internal/token"
 )
@@ -27,39 +28,39 @@ func NewParser(input string) *Parser {
 	return p
 }
 
-func ParseString(input string) (*ast.Document, error) {
+func ParseString(input string) (*document.Document, error) {
 	return NewParser(input).Parse()
 }
 
-func (p *Parser) Parse() (*ast.Document, error) {
-	doc := &ast.Document{}
+func (p *Parser) Parse() (*document.Document, error) {
+	doc := &document.Document{}
 
-	for p.cur.Type != token.TokenEOF {
+	for p.cur.Type != token.EOF {
 		switch p.cur.Type {
-		case token.TokenPacket:
+		case token.PACKET_KEYWORD:
 			if err := p.parsePacket(doc); err != nil {
 				return nil, err
 			}
 
-		case token.TokenSet:
+		case token.SET_KEYWORD:
 			if err := p.parseSetMode(doc); err != nil {
 				return nil, err
 			}
 
-		case token.TokenDef:
+		case token.DEF_KEYWORD:
 			defs, err := p.parseDefBlock()
 			if err != nil {
 				return nil, err
 			}
 			doc.Defs = append(doc.Defs, defs...)
 
-		case token.TokenOut:
+		case token.OUT_KEYWORD:
 			outs, err := p.parseOutBlock()
 			if err != nil {
 				return nil, err
 			}
 			doc.Outs = append(doc.Outs, outs...)
-		case token.TokenVar:
+		case token.VAR_KEYWORD:
 			vars, err := p.parseVarBlock()
 			if err != nil {
 				return nil, err
@@ -73,12 +74,12 @@ func (p *Parser) Parse() (*ast.Document, error) {
 	return doc, nil
 }
 
-func (p *Parser) parsePacket(doc *ast.Document) error {
-	if err := p.expect(token.TokenPacket); err != nil {
+func (p *Parser) parsePacket(doc *document.Document) error {
+	if err := p.expect(token.PACKET_KEYWORD); err != nil {
 		return err
 	}
 
-	if p.cur.Type != token.TokenIdent {
+	if p.cur.Type != token.IDENT {
 		return p.errf("expected packet name, got %s %q", p.cur.Type, p.cur.Lit)
 	}
 
@@ -87,25 +88,25 @@ func (p *Parser) parsePacket(doc *ast.Document) error {
 	return nil
 }
 
-func (p *Parser) parseSetMode(doc *ast.Document) error {
-	if err := p.expect(token.TokenSet); err != nil {
+func (p *Parser) parseSetMode(doc *document.Document) error {
+	if err := p.expect(token.SET_KEYWORD); err != nil {
 		return err
 	}
 
-	if err := p.expect(token.TokenMode); err != nil {
+	if err := p.expect(token.MODE_KEYWORD); err != nil {
 		return err
 	}
 
-	if p.cur.Type != token.TokenIdent {
+	if p.cur.Type != token.IDENT {
 		return p.errf("expected byte order")
 	}
 
 	switch p.cur.Lit {
 	case "BIG_ENDIAN":
-		doc.ByteOrder = ast.BIG_ENDIAN
+		doc.ByteOrder = order.BIG_ENDIAN
 
 	case "LITTLE_ENDIAN":
-		doc.ByteOrder = ast.LITTLE_ENDIAN
+		doc.ByteOrder = order.LITTLE_ENDIAN
 
 	default:
 		return p.errf("unknown byte order %q", p.cur.Lit)
@@ -113,16 +114,16 @@ func (p *Parser) parseSetMode(doc *ast.Document) error {
 
 	p.next()
 
-	if p.cur.Type != token.TokenIdent {
+	if p.cur.Type != token.IDENT {
 		return p.errf("expected bit order")
 	}
 
 	switch p.cur.Lit {
 	case "MSB_FIRST":
-		doc.BitOrder = ast.MSB_FIRST
+		doc.BitOrder = order.MSB_FIRST
 
 	case "LSB_FIRST":
-		doc.BitOrder = ast.LSB_FIRST
+		doc.BitOrder = order.LSB_FIRST
 
 	default:
 		return p.errf("unknown bit order %q", p.cur.Lit)
@@ -133,18 +134,18 @@ func (p *Parser) parseSetMode(doc *ast.Document) error {
 	return nil
 }
 
-func (p *Parser) parseVarBlock() ([]ast.Var, error) {
-	if err := p.expect(token.TokenVar); err != nil {
+func (p *Parser) parseVarBlock() ([]document.Var, error) {
+	if err := p.expect(token.VAR_KEYWORD); err != nil {
 		return nil, err
 	}
 
-	if err := p.expect(token.TokenLBrace); err != nil {
+	if err := p.expect(token.LBRACE_SIGN); err != nil {
 		return nil, err
 	}
 
-	var vars []ast.Var
+	var vars []document.Var
 
-	for p.cur.Type != token.TokenRBrace && p.cur.Type != token.TokenEOF {
+	for p.cur.Type != token.RBRACE_SIGN && p.cur.Type != token.EOF {
 		v, err := p.parseVarLine()
 		if err != nil {
 			return nil, err
@@ -152,48 +153,48 @@ func (p *Parser) parseVarBlock() ([]ast.Var, error) {
 		vars = append(vars, v)
 	}
 
-	if err := p.expect(token.TokenRBrace); err != nil {
+	if err := p.expect(token.RBRACE_SIGN); err != nil {
 		return nil, err
 	}
 
 	return vars, nil
 }
 
-func (p *Parser) parseVarLine() (ast.Var, error) {
-	if p.cur.Type != token.TokenIdent {
-		return ast.Var{}, p.errf("expected variable name, got %s %q", p.cur.Type, p.cur.Lit)
+func (p *Parser) parseVarLine() (document.Var, error) {
+	if p.cur.Type != token.IDENT {
+		return document.Var{}, p.errf("expected variable name, got %s %q", p.cur.Type, p.cur.Lit)
 	}
 
 	name := p.cur.Lit
 	p.next()
 
-	if err := p.expect(token.TokenEqual); err != nil {
-		return ast.Var{}, err
+	if err := p.expect(token.EQUAL_SIGN); err != nil {
+		return document.Var{}, err
 	}
 
 	expr, err := p.parseExpr(0)
 	if err != nil {
-		return ast.Var{}, err
+		return document.Var{}, err
 	}
 
-	return ast.Var{
+	return document.Var{
 		Name: name,
 		Expr: expr,
 	}, nil
 }
 
-func (p *Parser) parseDefBlock() ([]ast.Def, error) {
-	if err := p.expect(token.TokenDef); err != nil {
+func (p *Parser) parseDefBlock() ([]document.Def, error) {
+	if err := p.expect(token.DEF_KEYWORD); err != nil {
 		return nil, err
 	}
 
-	if err := p.expect(token.TokenLBrace); err != nil {
+	if err := p.expect(token.LBRACE_SIGN); err != nil {
 		return nil, err
 	}
 
-	var defs []ast.Def
+	var defs []document.Def
 
-	for p.cur.Type != token.TokenRBrace && p.cur.Type != token.TokenEOF {
+	for p.cur.Type != token.RBRACE_SIGN && p.cur.Type != token.EOF {
 		def, err := p.parseDefLine()
 		if err != nil {
 			return nil, err
@@ -201,77 +202,77 @@ func (p *Parser) parseDefBlock() ([]ast.Def, error) {
 		defs = append(defs, def)
 	}
 
-	if err := p.expect(token.TokenRBrace); err != nil {
+	if err := p.expect(token.RBRACE_SIGN); err != nil {
 		return nil, err
 	}
 
 	return defs, nil
 }
 
-func (p *Parser) parseDefLine() (ast.Def, error) {
-	if p.cur.Type != token.TokenIdent {
-		return ast.Def{}, p.errf("expected field name in def block, got %s %q", p.cur.Type, p.cur.Lit)
+func (p *Parser) parseDefLine() (document.Def, error) {
+	if p.cur.Type != token.IDENT {
+		return document.Def{}, p.errf("expected field name in def block, got %s %q", p.cur.Type, p.cur.Lit)
 	}
 
-	def := ast.Def{Name: p.cur.Lit}
+	def := document.Def{Name: p.cur.Lit}
 	p.next()
 
-	if err := p.expect(token.TokenFrom); err != nil {
-		return ast.Def{}, err
+	if err := p.expect(token.FROM_KEYWORD); err != nil {
+		return document.Def{}, err
 	}
 
 	from, err := p.parseExpr(0)
 	if err != nil {
-		return ast.Def{}, err
+		return document.Def{}, err
 	}
 	def.From = from
 
 	switch p.cur.Type {
-	case token.TokenLength:
+	case token.LENGTH_KEYWORD:
 		p.next()
 
 		length, err := p.parseExpr(0)
 		if err != nil {
-			return ast.Def{}, err
+			return document.Def{}, err
 		}
 
 		def.Length = length
 		def.UseLength = true
 
-	case token.TokenTo:
+	case token.TO_KEYWORD:
 		p.next()
 
 		to, err := p.parseExpr(0)
 		if err != nil {
-			return ast.Def{}, err
+			return document.Def{}, err
 		}
 
 		def.To = to
 		def.UseTo = true
 
 	default:
-		return ast.Def{}, p.errf("expected length or to in def line, got %s %q", p.cur.Type, p.cur.Lit)
+		return document.Def{}, p.errf("expected length or to in def line, got %s %q", p.cur.Type, p.cur.Lit)
 	}
 
 	return def, nil
 }
 
-func (p *Parser) parseOutBlock() ([]ast.Out, error) {
-	if err := p.expect(token.TokenOut); err != nil {
+func (p *Parser) parseOutBlock() ([]document.Out, error) {
+	if err := p.expect(token.OUT_KEYWORD); err != nil {
 		return nil, err
 	}
 
-	if err := p.expect(token.TokenJSON); err != nil {
+	if err := p.expect(token.JSON_KEYWORD); err != nil {
 		return nil, err
 	}
 
-	if err := p.expect(token.TokenLBrace); err != nil {
+	if err := p.expect(token.LBRACE_SIGN); err != nil {
 		return nil, err
 	}
 
-	var outs []ast.Out
+	var outs []document.Out
 
-	for p.cur.Type != token.TokenRBrace && p.cur.Type != token.TokenEOF {
+	for p.cur.Type != token.RBRACE_SIGN && p.cur.Type != token.EOF {
 		out, err := p.parseOutLine()
 		if err != nil {
 			return nil, err
@@ -279,47 +280,47 @@ func (p *Parser) parseOutBlock() ([]ast.Out, error) {
 		outs = append(outs, out)
 	}
 
-	if err := p.expect(token.TokenRBrace); err != nil {
+	if err := p.expect(token.RBRACE_SIGN); err != nil {
 		return nil, err
 	}
 
 	return outs, nil
 }
 
-func (p *Parser) parseOutLine() (ast.Out, error) {
-	if p.cur.Type != token.TokenIdent {
-		return ast.Out{}, p.errf("expected field name in out block, got %s %q", p.cur.Type, p.cur.Lit)
+func (p *Parser) parseOutLine() (document.Out, error) {
+	if p.cur.Type != token.IDENT {
+		return document.Out{}, p.errf("expected field name in out block, got %s %q", p.cur.Type, p.cur.Lit)
 	}
 
-	out := ast.Out{
+	out := document.Out{
 		Field: p.cur.Lit,
 	}
 
 	p.next()
 
-	if p.cur.Type == token.TokenLAngle {
+	if p.cur.Type == token.LANGLE_SIGN {
 		p.next()
 
-		if p.cur.Type != token.TokenNumber {
-			return ast.Out{}, p.errf("expected bit index number")
+		if p.cur.Type != token.NUMBER {
+			return document.Out{}, p.errf("expected bit index number")
 		}
 
 		v, err := parseNumber(p.cur.Lit)
 		if err != nil {
-			return ast.Out{}, p.errf("invalid bit index %q", p.cur.Lit)
+			return document.Out{}, p.errf("invalid bit index %q", p.cur.Lit)
 		}
 
 		idx := int(v)
 		out.BitIndex = &idx
 		p.next()
 
-		if err := p.expect(token.TokenRAngle); err != nil {
-			return ast.Out{}, err
+		if err := p.expect(token.RANGLE_SIGN); err != nil {
+			return document.Out{}, err
 		}
 	}
 
-	if p.cur.Type != token.TokenIdent {
-		return ast.Out{}, p.errf("expected output path, got %s %q", p.cur.Type, p.cur.Lit)
+	if p.cur.Type != token.IDENT {
+		return document.Out{}, p.errf("expected output path, got %s %q", p.cur.Type, p.cur.Lit)
 	}
 
 	out.Path = p.cur.Lit
@@ -327,7 +328,7 @@ func (p *Parser) parseOutLine() (ast.Out, error) {
 
 	// Normal output:
 	// src_port source_port DEC
-	if p.cur.Type == token.TokenIdent {
+	if p.cur.Type == token.IDENT {
 		out.Format = p.cur.Lit
 		p.next()
 		return out, nil
@@ -335,37 +336,37 @@ func (p *Parser) parseOutLine() (ast.Out, error) {
 
 	// Bracket output:
 	// flags<6> syn { 0 : false 1 : true }
-	if p.cur.Type == token.TokenLBrace {
+	if p.cur.Type == token.LBRACE_SIGN {
 		m, err := p.parseMapBlock()
 		if err != nil {
-			return ast.Out{}, err
+			return document.Out{}, err
 		}
 		out.Map = m
 		return out, nil
 	}
 
-	return ast.Out{}, p.errf("expected format or map block in out line, got %s %q", p.cur.Type, p.cur.Lit)
+	return document.Out{}, p.errf("expected format or map block in out line, got %s %q", p.cur.Type, p.cur.Lit)
 }
 
 func (p *Parser) parseMapBlock() (map[string]string, error) {
-	if err := p.expect(token.TokenLBrace); err != nil {
+	if err := p.expect(token.LBRACE_SIGN); err != nil {
 		return nil, err
 	}
 
 	m := make(map[string]string)
 
-	for p.cur.Type != token.TokenRBrace && p.cur.Type != token.TokenEOF {
+	for p.cur.Type != token.RBRACE_SIGN && p.cur.Type != token.EOF {
 		var key string
 
 		switch p.cur.Type {
-		case token.TokenNumber:
+		case token.NUMBER:
 			v, err := parseNumber(p.cur.Lit)
 			if err != nil {
 				return nil, p.errf("invalid map key %q", p.cur.Lit)
 			}
 			key = strconv.FormatInt(v, 10)
 
-		case token.TokenIdent:
+		case token.IDENT:
 			key = p.cur.Lit
 
 		default:
@@ -374,14 +375,14 @@ func (p *Parser) parseMapBlock() (map[string]string, error) {
 
 		p.next()
 
-		if err := p.expect(token.TokenColon); err != nil {
+		if err := p.expect(token.COLON_SIGN); err != nil {
 			return nil, err
 		}
 
 		var val string
 
 		switch p.cur.Type {
-		case token.TokenString, token.TokenIdent, token.TokenNumber:
+		case token.STRING, token.IDENT, token.NUMBER:
 			val = p.cur.Lit
 		default:
 			return nil, p.errf("expected map value, got %s %q", p.cur.Type, p.cur.Lit)
@@ -391,14 +392,14 @@ func (p *Parser) parseMapBlock() (map[string]string, error) {
 		p.next()
 	}
 
-	if err := p.expect(token.TokenRBrace); err != nil {
+	if err := p.expect(token.RBRACE_SIGN); err != nil {
 		return nil, err
 	}
 
 	return m, nil
 }
 
-func (p *Parser) parseExpr(minPrec int) (ast.Expr, error) {
+func (p *Parser) parseExpr(minPrec int) (document.Expr, error) {
 	left, err := p.parsePrimary()
 	if err != nil {
 		return nil, err
@@ -418,7 +419,7 @@ func (p *Parser) parseExpr(minPrec int) (ast.Expr, error) {
 			return nil, err
 		}
 
-		left = ast.BinaryExpr{
+		left = document.BinaryExpr{
 			Op:    op,
 			Left:  left,
 			Right: right,
@@ -428,39 +429,39 @@ func (p *Parser) parseExpr(minPrec int) (ast.Expr, error) {
 	return left, nil
 }
 
-func (p *Parser) parsePrimary() (ast.Expr, error) {
+func (p *Parser) parsePrimary() (document.Expr, error) {
 	switch p.cur.Type {
-	case token.TokenNumber:
+	case token.NUMBER:
 		raw := p.cur.Lit
 		v, err := parseNumber(raw)
 		if err != nil {
 			return nil, p.errf("invalid number %q", raw)
 		}
 		p.next()
-		return ast.NumberExpr{Raw: raw, Value: v}, nil
+		return document.NumberExpr{Raw: raw, Value: v}, nil
 
-	case token.TokenIdent:
+	case token.IDENT:
 		name := p.cur.Lit
 		p.next()
-		return ast.IdentExpr{Name: name}, nil
+		return document.IdentExpr{Name: name}, nil
 
-	case token.TokenEnd:
+	case token.END_KEYWORD:
 		p.next()
-		return ast.EndExpr{}, nil
+		return document.EndExpr{}, nil
 
-	case token.TokenStar:
+	case token.STAR_SIGN:
 		p.next()
 
-		if p.cur.Type != token.TokenIdent {
+		if p.cur.Type != token.IDENT {
 			return nil, p.errf("expected field name after *")
 		}
 
 		name := p.cur.Lit
 		p.next()
 
-		return ast.FieldValueExpr{Name: name}, nil
+		return document.FieldValueExpr{Name: name}, nil
 
-	case token.TokenLParen:
+	case token.LPAREN_SIGN:
 		p.next()
 
 		expr, err := p.parseExpr(0)
@@ -468,7 +469,7 @@ func (p *Parser) parsePrimary() (ast.Expr, error) {
 			return nil, err
 		}
 
-		if err := p.expect(token.TokenRParen); err != nil {
+		if err := p.expect(token.RPAREN_SIGN); err != nil {
 			return nil, err
 		}
 

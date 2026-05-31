@@ -32,52 +32,52 @@ func (l *Lexer) NextToken() token.Token {
 
 	ch := l.peek()
 	if ch == 0 {
-		return token.Token{Type: token.TokenEOF, Lit: "", Line: startLine, Col: startCol}
+		return token.Token{Type: token.EOF, Lit: "", Line: startLine, Col: startCol}
 	}
 
 	switch ch {
 	case '{':
 		l.advance()
-		return token.Token{Type: token.TokenLBrace, Lit: "{", Line: startLine, Col: startCol}
+		return token.Token{Type: token.LBRACE_SIGN, Lit: "{", Line: startLine, Col: startCol}
 	case '}':
 		l.advance()
-		return token.Token{Type: token.TokenRBrace, Lit: "}", Line: startLine, Col: startCol}
+		return token.Token{Type: token.RBRACE_SIGN, Lit: "}", Line: startLine, Col: startCol}
 	case '(':
 		l.advance()
-		return token.Token{Type: token.TokenLParen, Lit: "(", Line: startLine, Col: startCol}
+		return token.Token{Type: token.LPAREN_SIGN, Lit: "(", Line: startLine, Col: startCol}
 	case ')':
 		l.advance()
-		return token.Token{Type: token.TokenRParen, Lit: ")", Line: startLine, Col: startCol}
+		return token.Token{Type: token.RPAREN_SIGN, Lit: ")", Line: startLine, Col: startCol}
 	case '<':
 		l.advance()
-		return token.Token{Type: token.TokenLAngle, Lit: "<", Line: startLine, Col: startCol}
+		return token.Token{Type: token.LANGLE_SIGN, Lit: "<", Line: startLine, Col: startCol}
 	case '>':
 		l.advance()
-		return token.Token{Type: token.TokenRAngle, Lit: ">", Line: startLine, Col: startCol}
+		return token.Token{Type: token.RANGLE_SIGN, Lit: ">", Line: startLine, Col: startCol}
 	case '*':
 		l.advance()
-		return token.Token{Type: token.TokenStar, Lit: "*", Line: startLine, Col: startCol}
+		return token.Token{Type: token.STAR_SIGN, Lit: "*", Line: startLine, Col: startCol}
 	case '+':
 		l.advance()
-		return token.Token{Type: token.TokenPlus, Lit: "+", Line: startLine, Col: startCol}
+		return token.Token{Type: token.PLUS_SIGN, Lit: "+", Line: startLine, Col: startCol}
 	case '-':
 		l.advance()
-		return token.Token{Type: token.TokenMinus, Lit: "-", Line: startLine, Col: startCol}
+		return token.Token{Type: token.MINUS_SIGN, Lit: "-", Line: startLine, Col: startCol}
 	case '/':
 		l.advance()
-		return token.Token{Type: token.TokenSlash, Lit: "/", Line: startLine, Col: startCol}
+		return token.Token{Type: token.SLASH_SIGN, Lit: "/", Line: startLine, Col: startCol}
 	case ':':
 		l.advance()
-		return token.Token{Type: token.TokenColon, Lit: ":", Line: startLine, Col: startCol}
+		return token.Token{Type: token.COLON_SIGN, Lit: ":", Line: startLine, Col: startCol}
 	case '=':
 		l.advance()
-		return token.Token{Type: token.TokenEqual, Lit: "=", Line: startLine, Col: startCol}
+		return token.Token{Type: token.EQUAL_SIGN, Lit: "=", Line: startLine, Col: startCol}
 	case '"':
 		lit, err := l.readString()
 		if err != nil {
-			return token.Token{Type: token.TokenIllegal, Lit: err.Error(), Line: startLine, Col: startCol}
+			return token.Token{Type: token.ILLEGAL, Lit: err.Error(), Line: startLine, Col: startCol}
 		}
-		return token.Token{Type: token.TokenString, Lit: lit, Line: startLine, Col: startCol}
+		return token.Token{Type: token.STRING, Lit: lit, Line: startLine, Col: startCol}
 	}
 
 	if isIdentStart(ch) {
@@ -93,7 +93,7 @@ func (l *Lexer) NextToken() token.Token {
 	if unicode.IsDigit(ch) {
 		lit := l.readNumber()
 		return token.Token{
-			Type: token.TokenNumber,
+			Type: token.NUMBER,
 			Lit:  lit,
 			Line: startLine,
 			Col:  startCol,
@@ -102,7 +102,7 @@ func (l *Lexer) NextToken() token.Token {
 
 	l.advance()
 	return token.Token{
-		Type: token.TokenIllegal,
+		Type: token.ILLEGAL,
 		Lit:  fmt.Sprintf("%c", ch),
 		Line: startLine,
 		Col:  startCol,

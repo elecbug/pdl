@@ -4,11 +4,11 @@ import (
 	"fmt"
 	"strconv"
 
-	"github.com/elecbug/pdl/internal/ast"
 	"github.com/elecbug/pdl/internal/decoder"
+	"github.com/elecbug/pdl/internal/document"
 )
 
-func BuildJSON(doc *ast.Document, result *decoder.DecodeResult) (any, error) {
+func BuildJSON(doc *document.Document, result *decoder.DecodeResult) (any, error) {
 	root := map[string]any{}
 
 	for _, rule := range doc.Outs {

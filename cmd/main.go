@@ -6,8 +6,8 @@ import (
 	"os"
 	"time"
 
-	"github.com/elecbug/pdl/internal/ast"
 	"github.com/elecbug/pdl/internal/decoder"
+	"github.com/elecbug/pdl/internal/document"
 	"github.com/elecbug/pdl/internal/extractor"
 	"github.com/elecbug/pdl/internal/parser"
 )
@@ -25,7 +25,7 @@ func main() {
 	}
 	log.Printf("Reading file: %v", time.Since(now))
 
-	var doc *ast.Document
+	var doc *document.Document
 	{
 		now = time.Now()
 		doc, err = parser.ParseString(string(src))
@@ -53,7 +53,7 @@ func main() {
 			log.Fatalf("failed to read JSON file: %v", err)
 		}
 
-		doc, err = ast.Deserialize(jsonData)
+		doc, err = document.Deserialize(jsonData)
 		if err != nil {
 			log.Fatalf("failed to deserialize JSON file: %v", err)
 		}

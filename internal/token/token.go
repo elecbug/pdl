@@ -3,40 +3,37 @@ package token
 type TokenType string
 
 const (
-	TokenEOF     TokenType = "EOF"
-	TokenIllegal TokenType = "ILLEGAL"
+	EOF     TokenType = "EOF"
+	ILLEGAL TokenType = "ILLEGAL"
+	IDENT   TokenType = "IDENT"
+	NUMBER  TokenType = "NUMBER"
+	STRING  TokenType = "STRING"
 
-	TokenIdent  TokenType = "IDENT"
-	TokenNumber TokenType = "NUMBER"
-	TokenString TokenType = "STRING"
+	PACKET_KEYWORD TokenType = "packet"
+	SET_KEYWORD    TokenType = "set"
+	MODE_KEYWORD   TokenType = "mode"
+	DEF_KEYWORD    TokenType = "def"
+	OUT_KEYWORD    TokenType = "out"
+	JSON_KEYWORD   TokenType = "json"
+	VAR_KEYWORD    TokenType = "var"
+	FROM_KEYWORD   TokenType = "from"
+	TO_KEYWORD     TokenType = "to"
+	LENGTH_KEYWORD TokenType = "length"
+	END_KEYWORD    TokenType = "end"
 
-	TokenPacket TokenType = "packet"
-	TokenSet    TokenType = "set"
-	TokenMode   TokenType = "mode"
-	TokenDef    TokenType = "def"
-	TokenOut    TokenType = "out"
-	TokenJSON   TokenType = "json"
-	TokenVar    TokenType = "var"
-
-	TokenFrom   TokenType = "from"
-	TokenTo     TokenType = "to"
-	TokenLength TokenType = "length"
-	TokenEnd    TokenType = "end"
-
-	TokenEqual  TokenType = "="
-	TokenLBrace TokenType = "{"
-	TokenRBrace TokenType = "}"
-	TokenLParen TokenType = "("
-	TokenRParen TokenType = ")"
-	TokenLAngle TokenType = "<"
-	TokenRAngle TokenType = ">"
-
-	TokenStar  TokenType = "*"
-	TokenPlus  TokenType = "+"
-	TokenMinus TokenType = "-"
-	TokenSlash TokenType = "/"
-
-	TokenColon TokenType = ":"
+	EQUAL_SIGN  TokenType = "="
+	LBRACE_SIGN TokenType = "{"
+	RBRACE_SIGN TokenType = "}"
+	LPAREN_SIGN TokenType = "("
+	RPAREN_SIGN TokenType = ")"
+	LANGLE_SIGN TokenType = "<"
+	RANGLE_SIGN TokenType = ">"
+	STAR_SIGN   TokenType = "*"
+	PLUS_SIGN   TokenType = "+"
+	MINUS_SIGN  TokenType = "-"
+	SLASH_SIGN  TokenType = "/"
+	COLON_SIGN  TokenType = ":"
+	QUOTE_SIGN  TokenType = "\""
 )
 
 type Token struct {
@@ -47,22 +44,22 @@ type Token struct {
 }
 
 var keywords = map[string]TokenType{
-	"packet": TokenPacket,
-	"set":    TokenSet,
-	"mode":   TokenMode,
-	"var":    TokenVar,
-	"def":    TokenDef,
-	"out":    TokenOut,
-	"json":   TokenJSON,
-	"from":   TokenFrom,
-	"to":     TokenTo,
-	"length": TokenLength,
-	"end":    TokenEnd,
+	"packet": PACKET_KEYWORD,
+	"set":    SET_KEYWORD,
+	"mode":   MODE_KEYWORD,
+	"var":    VAR_KEYWORD,
+	"def":    DEF_KEYWORD,
+	"out":    OUT_KEYWORD,
+	"json":   JSON_KEYWORD,
+	"from":   FROM_KEYWORD,
+	"to":     TO_KEYWORD,
+	"length": LENGTH_KEYWORD,
+	"end":    END_KEYWORD,
 }
 
 func LookupIdent(s string) TokenType {
 	if tok, ok := keywords[s]; ok {
 		return tok
 	}
-	return TokenIdent
+	return IDENT
 }

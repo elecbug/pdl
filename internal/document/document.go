@@ -1,15 +1,17 @@
-package ast
+package document
 
 import (
 	"bytes"
 	"encoding/gob"
+
+	"github.com/elecbug/pdl/internal/document/order"
 )
 
 type Document struct {
 	PacketName string
 
-	ByteOrder ByteOrder
-	BitOrder  BitOrder
+	ByteOrder order.ByteOrder
+	BitOrder  order.BitOrder
 
 	Vars []Var
 	Defs []Def
