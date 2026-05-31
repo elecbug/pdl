@@ -11,7 +11,7 @@ import (
 func BuildJSON(doc *ast.Document, result *decoder.DecodeResult) (any, error) {
 	root := map[string]any{}
 
-	for _, rule := range doc.Outputs {
+	for _, rule := range doc.Outs {
 		value, ok := result.Values[rule.Field]
 		if !ok {
 			return nil, fmt.Errorf("output field %q is not decoded", rule.Field)

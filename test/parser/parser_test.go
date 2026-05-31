@@ -56,7 +56,7 @@ func TestParseTCP(t *testing.T) {
 		t.Fatal("Defs is empty")
 	}
 
-	if len(doc.Outputs) == 0 {
+	if len(doc.Outs) == 0 {
 		t.Fatal("Outputs is empty")
 	}
 }

@@ -58,7 +58,7 @@ func (p *Parser) Parse() (*ast.Document, error) {
 			if err != nil {
 				return nil, err
 			}
-			doc.Outputs = append(doc.Outputs, outs...)
+			doc.Outs = append(doc.Outs, outs...)
 		case token.TokenVar:
 			vars, err := p.parseVarBlock()
 			if err != nil {

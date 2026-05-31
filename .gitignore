@@ -5,3 +5,14 @@ tmp/
 log/
 logs/
 *.log
+
+# Build artifacts to ignore
+
+bin/
+build/
+dist/
+*.exe
+*.dll
+*.so
+*.dylib
+out*
