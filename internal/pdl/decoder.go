@@ -99,7 +99,7 @@ func (c *decodeContext) decodeDef(def Def) error {
 
 	bits := extractBits(c.data, from, length)
 
-	u, err := bitsToUint(bits, length, c.doc.Mode)
+	u, err := bitsToUint(bits, length, c.doc.ByteOrder)
 	if err != nil {
 		return fmt.Errorf("decode %s: %w", def.Name, err)
 	}

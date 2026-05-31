@@ -28,20 +28,20 @@ func FormatValue(v Value, format string) (any, error) {
 	}
 }
 
-func GetBit(v Value, idx int, mode string) (uint64, error) {
+func GetBit(v Value, idx int, bitOrder BitOrder) (uint64, error) {
 	if idx < 0 || int64(idx) >= v.Len {
 		return 0, fmt.Errorf("bit index %d out of range for %q", idx, v.Name)
 	}
 
-	switch mode {
-	case "", "BIG_ENDIAN":
+	switch bitOrder {
+	case MSB_FIRST:
 		shift := v.Len - int64(idx) - 1
 		return (v.UInt >> shift) & 1, nil
 
-	case "LITTLE_ENDIAN":
+	case LSB_FIRST:
 		return (v.UInt >> idx) & 1, nil
 
 	default:
-		return 0, fmt.Errorf("unknown mode %q", mode)
+		return 0, fmt.Errorf("unknown bit order %q", bitOrder)
 	}
 }

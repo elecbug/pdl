@@ -1,6 +1,6 @@
 packet TCP
+set mode BIG_ENDIAN MSB_FIRST
 
-set mode BIG_ENDIAN
 def {
     # Fixed header: 20 bytes
     src_port       from 0   length 16    # You can use other forms like `from 0  to 15` or `from  0:15` or `from 0;16`
@@ -23,7 +23,6 @@ def {
     payload        from (*data_offset * 32) to end
 }
 
-set mode BIG_ENDIAN
 out json {
     src_port       source_port           DEC
     dst_port       destination_port      DEC
@@ -41,10 +40,7 @@ out json {
 
     options        options               HEX
     payload        payload               HEX
-}
 
-set mode BIG_ENDIAN
-out json {
     # In BIG_ENDIAN mode, flags<0> is MSB and flags<7> is LSB.
     flags<0> cwr {
         0 : false

@@ -26,15 +26,19 @@ func extractBits(data []byte, from int64, length int64) []byte {
 	return out
 }
 
-func bitsToUint(bits []byte, bitLen int64, mode string) (uint64, error) {
+func bitsToUint(
+	bits []byte,
+	bitLen int64,
+	byteOrder ByteOrder,
+) (uint64, error) {
 	if bitLen > 64 {
 		return 0, fmt.Errorf("cannot convert field longer than 64 bits to uint: %d", bitLen)
 	}
 
 	var u uint64
 
-	switch mode {
-	case "", "BIG_ENDIAN":
+	switch byteOrder {
+	case BIG_ENDIAN:
 		for i := int64(0); i < bitLen; i++ {
 			byteIdx := i / 8
 			bitIdx := i % 8
@@ -43,7 +47,7 @@ func bitsToUint(bits []byte, bitLen int64, mode string) (uint64, error) {
 			u = (u << 1) | uint64(bit)
 		}
 
-	case "LITTLE_ENDIAN":
+	case LITTLE_ENDIAN:
 		// MVP: reverse by byte if byte-aligned.
 		// Bit-level little endian can be refined later.
 		if bitLen%8 != 0 {
@@ -56,7 +60,7 @@ func bitsToUint(bits []byte, bitLen int64, mode string) (uint64, error) {
 		}
 
 	default:
-		return 0, fmt.Errorf("unknown mode %q", mode)
+		return 0, fmt.Errorf("unknown byte order %q", byteOrder)
 	}
 
 	return u, nil

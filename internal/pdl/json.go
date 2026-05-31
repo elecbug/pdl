@@ -17,7 +17,7 @@ func BuildJSON(doc *Document, result *DecodeResult) (any, error) {
 		var outValue any
 
 		if rule.BitIndex != nil {
-			bit, err := GetBit(value, *rule.BitIndex, doc.Mode)
+			bit, err := GetBit(value, *rule.BitIndex, doc.BitOrder)
 			if err != nil {
 				return nil, err
 			}

@@ -93,11 +93,39 @@ func (p *Parser) parseSetMode(doc *Document) error {
 	}
 
 	if p.cur.Type != TokenIdent {
-		return p.errf("expected mode name, got %s %q", p.cur.Type, p.cur.Lit)
+		return p.errf("expected byte order")
 	}
 
-	doc.Mode = p.cur.Lit
+	switch p.cur.Lit {
+	case "BIG_ENDIAN":
+		doc.ByteOrder = BIG_ENDIAN
+
+	case "LITTLE_ENDIAN":
+		doc.ByteOrder = LITTLE_ENDIAN
+
+	default:
+		return p.errf("unknown byte order %q", p.cur.Lit)
+	}
+
 	p.next()
+
+	if p.cur.Type != TokenIdent {
+		return p.errf("expected bit order")
+	}
+
+	switch p.cur.Lit {
+	case "MSB_FIRST":
+		doc.BitOrder = MSB_FIRST
+
+	case "LSB_FIRST":
+		doc.BitOrder = LSB_FIRST
+
+	default:
+		return p.errf("unknown bit order %q", p.cur.Lit)
+	}
+
+	p.next()
+
 	return nil
 }
 
