@@ -66,6 +66,9 @@ func (l *Lexer) NextToken() Token {
 	case ':':
 		l.advance()
 		return Token{Type: TokenColon, Lit: ":", Line: startLine, Col: startCol}
+	case '=':
+		l.advance()
+		return Token{Type: TokenEqual, Lit: "=", Line: startLine, Col: startCol}
 	}
 
 	if isIdentStart(ch) {

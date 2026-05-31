@@ -1,0 +1,7 @@
+# Temporary files to ignore
+
+temp/
+tmp/
+log/
+logs/
+*.log

@@ -15,12 +15,14 @@ const (
 	TokenDef    TokenType = "def"
 	TokenOut    TokenType = "out"
 	TokenJSON   TokenType = "json"
+	TokenVar    TokenType = "var"
 
 	TokenFrom   TokenType = "from"
 	TokenTo     TokenType = "to"
 	TokenLength TokenType = "length"
 	TokenEnd    TokenType = "end"
 
+	TokenEqual  TokenType = "="
 	TokenLBrace TokenType = "{"
 	TokenRBrace TokenType = "}"
 	TokenLParen TokenType = "("
@@ -47,6 +49,7 @@ var keywords = map[string]TokenType{
 	"packet": TokenPacket,
 	"set":    TokenSet,
 	"mode":   TokenMode,
+	"var":    TokenVar,
 	"def":    TokenDef,
 	"out":    TokenOut,
 	"json":   TokenJSON,

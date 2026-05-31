@@ -24,6 +24,16 @@ func Decode(doc *Document, data []byte) (*DecodeResult, error) {
 		doc:    doc,
 		data:   data,
 		values: make(map[string]Value),
+		vars:   make(map[string]int64),
+	}
+
+	for _, v := range doc.Vars {
+		value, err := ctx.evalExpr(v.Expr)
+		if err != nil {
+			return nil, fmt.Errorf("var %s: %w", v.Name, err)
+		}
+
+		ctx.vars[v.Name] = value
 	}
 
 	for _, def := range doc.Defs {
@@ -41,6 +51,7 @@ type decodeContext struct {
 	doc    *Document
 	data   []byte
 	values map[string]Value
+	vars   map[string]int64
 }
 
 func (c *decodeContext) decodeDef(def Def) error {
@@ -109,7 +120,11 @@ func (c *decodeContext) evalExpr(expr Expr) (int64, error) {
 		return e.Value, nil
 
 	case IdentExpr:
-		return 0, fmt.Errorf("identifier expression is not supported yet: %s", e.Name)
+		v, ok := c.vars[e.Name]
+		if !ok {
+			return 0, fmt.Errorf("undefined variable %q", e.Name)
+		}
+		return v, nil
 
 	case FieldValueExpr:
 		v, ok := c.values[e.Name]

@@ -4,8 +4,14 @@ type Document struct {
 	PacketName string
 	Mode       string
 
+	Vars    []Var
 	Defs    []Def
 	Outputs []Output
+}
+
+type Var struct {
+	Name string
+	Expr Expr
 }
 
 type Def struct {

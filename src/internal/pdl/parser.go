@@ -55,7 +55,12 @@ func (p *Parser) Parse() (*Document, error) {
 				return nil, err
 			}
 			doc.Outputs = append(doc.Outputs, outs...)
-
+		case TokenVar:
+			vars, err := p.parseVarBlock()
+			if err != nil {
+				return nil, err
+			}
+			doc.Vars = append(doc.Vars, vars...)
 		default:
 			return nil, p.errf("unexpected token %s %q", p.cur.Type, p.cur.Lit)
 		}
@@ -421,4 +426,53 @@ func (p *Parser) expect(t TokenType) error {
 func (p *Parser) errf(format string, args ...any) error {
 	msg := fmt.Sprintf(format, args...)
 	return fmt.Errorf("parse error at %d:%d: %s", p.cur.Line, p.cur.Col, msg)
+}
+
+func (p *Parser) parseVarBlock() ([]Var, error) {
+	if err := p.expect(TokenVar); err != nil {
+		return nil, err
+	}
+
+	if err := p.expect(TokenLBrace); err != nil {
+		return nil, err
+	}
+
+	var vars []Var
+
+	for p.cur.Type != TokenRBrace && p.cur.Type != TokenEOF {
+		v, err := p.parseVarLine()
+		if err != nil {
+			return nil, err
+		}
+		vars = append(vars, v)
+	}
+
+	if err := p.expect(TokenRBrace); err != nil {
+		return nil, err
+	}
+
+	return vars, nil
+}
+
+func (p *Parser) parseVarLine() (Var, error) {
+	if p.cur.Type != TokenIdent {
+		return Var{}, p.errf("expected variable name, got %s %q", p.cur.Type, p.cur.Lit)
+	}
+
+	name := p.cur.Lit
+	p.next()
+
+	if err := p.expect(TokenEqual); err != nil {
+		return Var{}, err
+	}
+
+	expr, err := p.parseExpr(0)
+	if err != nil {
+		return Var{}, err
+	}
+
+	return Var{
+		Name: name,
+		Expr: expr,
+	}, nil
 }
