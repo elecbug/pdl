@@ -17,14 +17,25 @@ set mode BIG_ENDIAN
 def {
     src_port       from 0   length 16
     dst_port       from 16  length 16
+    seq            from 32  length 32
+    ack            from 64  length 32
     data_offset    from 96  length 4
-    options        from 160 length (*data_offset * 32 - 160)
+    flags          from 104 length 8
     payload        from (*data_offset * 32) to end
 }
 
 out json {
-    src_port source_port DEC
-    dst_port destination_port DEC
+    src_port source.port DEC
+    dst_port destination.port DEC
+    seq sequence.number DEC
+    ack acknowledgment.number DEC
+
+    flags<6> flags.syn {
+        0 : false
+        1 : true
+    }
+
+    payload payload.raw HEX
 }
 `
 
@@ -33,18 +44,16 @@ out json {
 		log.Fatal(err)
 	}
 
-	// TCP header:
-	// src=80, dst=443, data_offset=5
 	packet := []byte{
-		0x00, 0x50, // src_port = 80
-		0x01, 0xbb, // dst_port = 443
-		0x00, 0x00, 0x00, 0x00, // seq
-		0x00, 0x00, 0x00, 0x00, // ack
-		0x50, 0x02, // data_offset=5, flags=SYN
-		0x20, 0x00, // window
-		0x00, 0x00, // checksum
-		0x00, 0x00, // urgent
-		0xde, 0xad, 0xbe, 0xef, // payload
+		0x00, 0x50,
+		0x01, 0xbb,
+		0x00, 0x00, 0x00, 0x01,
+		0x00, 0x00, 0x00, 0x02,
+		0x50, 0x02,
+		0x20, 0x00,
+		0x00, 0x00,
+		0x00, 0x00,
+		0xde, 0xad, 0xbe, 0xef,
 	}
 
 	result, err := pdl.Decode(doc, packet)
@@ -52,23 +61,11 @@ out json {
 		log.Fatal(err)
 	}
 
-	for name, v := range result.Values {
-		fmt.Printf("%s = %d, bits=%X, len=%d\n", name, v.UInt, v.Bits, v.Len)
-	}
-
-	jsonObj, err := pdl.BuildJSON(
-		doc,
-		result,
-	)
+	obj, err := pdl.BuildJSON(doc, result)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	b, _ := json.MarshalIndent(
-		jsonObj,
-		"",
-		"  ",
-	)
-
+	b, _ := json.MarshalIndent(obj, "", "  ")
 	fmt.Println(string(b))
 }

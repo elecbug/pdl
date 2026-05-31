@@ -194,7 +194,12 @@ func isIdentStart(ch rune) bool {
 }
 
 func isIdentPart(ch rune) bool {
-	return unicode.IsLetter(ch) || unicode.IsDigit(ch) || ch == '_'
+	return unicode.IsLetter(ch) ||
+		unicode.IsDigit(ch) ||
+		ch == '_' ||
+		ch == '.' ||
+		ch == '[' ||
+		ch == ']'
 }
 
 func isNumberPart(ch rune) bool {

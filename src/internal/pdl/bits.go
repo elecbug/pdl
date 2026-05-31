@@ -61,16 +61,3 @@ func bitsToUint(bits []byte, bitLen int64, mode string) (uint64, error) {
 
 	return u, nil
 }
-
-func GetBit(v Value, idx int) (uint64, error) {
-	if idx < 0 || int64(idx) >= v.Len {
-		return 0, fmt.Errorf("bit index out of range")
-	}
-
-	if v.Mode == "BIG_ENDIAN" {
-		shift := v.Len - int64(idx) - 1
-		return (v.UInt >> shift) & 1, nil
-	}
-
-	return (v.UInt >> idx) & 1, nil
-}

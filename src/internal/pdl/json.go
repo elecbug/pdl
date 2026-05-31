@@ -1,63 +1,60 @@
 package pdl
 
-import "fmt"
+import (
+	"fmt"
+	"strconv"
+)
 
-func BuildJSON(
-	doc *Document,
-	result *DecodeResult,
-) (map[string]any, error) {
-
-	out := make(map[string]any)
+func BuildJSON(doc *Document, result *DecodeResult) (any, error) {
+	root := map[string]any{}
 
 	for _, rule := range doc.Outputs {
-
-		value := result.Values[rule.Field]
-
-		if rule.BitIndex == nil {
-
-			if len(rule.Map) == 0 {
-
-				formatted, err := FormatValue(
-					value,
-					rule.Format,
-				)
-				if err != nil {
-					return nil, err
-				}
-
-				out[rule.Path] = formatted
-				continue
-			}
+		value, ok := result.Values[rule.Field]
+		if !ok {
+			return nil, fmt.Errorf("output field %q is not decoded", rule.Field)
 		}
 
-		if rule.BitIndex != nil {
+		var outValue any
 
-			bit, err := GetBit(
-				value,
-				*rule.BitIndex,
-			)
+		if rule.BitIndex != nil {
+			bit, err := GetBit(value, *rule.BitIndex, doc.Mode)
 			if err != nil {
 				return nil, err
 			}
 
-			key := fmt.Sprintf("%d", bit)
+			outValue = bit
 
-			if mapped, ok := rule.Map[key]; ok {
+			if rule.Map != nil {
+				key := strconv.FormatUint(bit, 10)
 
-				switch mapped {
-				case "true":
-					out[rule.Path] = true
-				case "false":
-					out[rule.Path] = false
-				default:
-					out[rule.Path] = mapped
+				if mapped, ok := rule.Map[key]; ok {
+					outValue = convertMappedValue(mapped)
 				}
-
-			} else {
-				out[rule.Path] = bit
 			}
+		} else {
+			formatted, err := FormatValue(value, rule.Format)
+			if err != nil {
+				return nil, err
+			}
+
+			outValue = formatted
+		}
+
+		if err := setJSONPath(&root, rule.Path, outValue); err != nil {
+			return nil, err
 		}
 	}
 
-	return out, nil
+	return root, nil
+}
+
+func convertMappedValue(s string) any {
+	switch s {
+	case "true":
+		return true
+	case "false":
+		return false
+	default:
+		return s
+	}
 }
