@@ -1,0 +1,91 @@
+packet TCP
+
+var {
+    offset_value = *data_offset as LITTLE_ENDIAN
+}
+
+def {
+    # Fixed header: 20 bytes
+    src_port       from 0   length 16    # You can use other forms like `from 0  to 15` or `from  0:15` or `from 0;16`
+    dst_port       from 16  length 16    #                              `from 16 to 31` or `from 16:31` or `from 0;16`
+    
+    seq            from 32  length 32
+    ack            from 64  length 32
+    
+    data_offset    from 96  length 4
+    reserved       from 100 length 3
+    ns             from 103 length 1
+    flags          from 104 length 8
+    
+    window         from 112 length 16
+    checksum       from 128 length 16
+    urgent_pointer from 144 length 16
+    
+    # Variable area
+    options        from 160 length (offset_value * 32 - 160)    # It equal to `...length (*data_offset * 32 - 160)` as LITTLE_ENDIAN
+    payload        from offset_value * 32 to end
+}
+
+set mode LITTLE_ENDIAN
+out json {
+    src_port       source_port           DEC
+    dst_port       destination_port      DEC
+
+    seq            sequence_number       DEC
+    ack            acknowledgment_number DEC
+
+    data_offset    header_length_words   DEC
+    reserved       reserved              BIN
+    ns             nonce_sum             BOOL
+
+    window         window_size           DEC
+    checksum       checksum              HEX
+    urgent_pointer urgent_pointer        DEC
+
+    options        options               HEX
+    payload        payload               HEX
+}
+
+set mode BIG_ENDIAN
+out json {
+    # In BIG_ENDIAN mode, flags<0> is MSB and flags<7> is LSB.
+    flags<0> cwr {
+        0 : false
+        1 : true
+    }
+
+    flags<1> ece {
+        0 : false
+        1 : true
+    }
+
+    flags<2> urg {
+        0 : false
+        1 : true
+    }
+
+    flags<3> ack_flag {
+        0 : false
+        1 : true
+    }
+
+    flags<4> psh {
+        0 : false
+        1 : true
+    }
+
+    flags<5> rst {
+        0 : false
+        1 : true
+    }
+
+    flags<6> syn {
+        0 : false
+        1 : true
+    }
+
+    flags<7> fin {
+        0 : false
+        1 : true
+    }
+}
