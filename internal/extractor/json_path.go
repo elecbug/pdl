@@ -1,4 +1,4 @@
-package pdl
+package extractor
 
 import (
 	"fmt"

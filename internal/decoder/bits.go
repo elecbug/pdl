@@ -1,7 +1,9 @@
-package pdl
+package decoder
 
 import (
 	"fmt"
+
+	"github.com/elecbug/pdl/internal/ast"
 )
 
 func extractBits(data []byte, from int64, length int64) []byte {
@@ -26,11 +28,7 @@ func extractBits(data []byte, from int64, length int64) []byte {
 	return out
 }
 
-func bitsToUint(
-	bits []byte,
-	bitLen int64,
-	byteOrder ByteOrder,
-) (uint64, error) {
+func bitsToUint(bits []byte, bitLen int64, byteOrder ast.ByteOrder) (uint64, error) {
 	if bitLen > 64 {
 		return 0, fmt.Errorf("cannot convert field longer than 64 bits to uint: %d", bitLen)
 	}
@@ -38,7 +36,7 @@ func bitsToUint(
 	var u uint64
 
 	switch byteOrder {
-	case BIG_ENDIAN:
+	case ast.BIG_ENDIAN:
 		for i := int64(0); i < bitLen; i++ {
 			byteIdx := i / 8
 			bitIdx := i % 8
@@ -47,7 +45,7 @@ func bitsToUint(
 			u = (u << 1) | uint64(bit)
 		}
 
-	case LITTLE_ENDIAN:
+	case ast.LITTLE_ENDIAN:
 		// MVP: reverse by byte if byte-aligned.
 		// Bit-level little endian can be refined later.
 		if bitLen%8 != 0 {

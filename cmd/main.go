@@ -6,7 +6,9 @@ import (
 	"log"
 	"os"
 
-	"github.com/elecbug/pdl/internal/pdl"
+	"github.com/elecbug/pdl/internal/decoder"
+	"github.com/elecbug/pdl/internal/extractor"
+	"github.com/elecbug/pdl/internal/parser"
 )
 
 func main() {
@@ -16,7 +18,7 @@ func main() {
 		log.Fatalf("failed to read file %s: %v", srcFile, err)
 	}
 
-	doc, err := pdl.ParseString(string(src))
+	doc, err := parser.ParseString(string(src))
 	if err != nil {
 		log.Fatalf("failed to parse PDL file %s: %v", srcFile, err)
 	}
@@ -38,12 +40,12 @@ func main() {
 		0xde, 0xad, 0xbe, 0xef, // payload
 	}
 
-	result, err := pdl.Decode(doc, packet)
+	result, err := decoder.Decode(doc, packet)
 	if err != nil {
 		log.Fatalf("failed to decode packet: %v", err)
 	}
 
-	obj, err := pdl.BuildJSON(doc, result)
+	obj, err := extractor.BuildJSON(doc, result)
 	if err != nil {
 		log.Fatalf("failed to build JSON: %v", err)
 	}

@@ -1,12 +1,15 @@
-package pdl
+package extractor
 
 import (
 	"encoding/hex"
 	"fmt"
 	"strings"
+
+	"github.com/elecbug/pdl/internal/ast"
+	"github.com/elecbug/pdl/internal/decoder"
 )
 
-func FormatValue(v Value, format string) (any, error) {
+func FormatValue(v decoder.Value, format string) (any, error) {
 	switch format {
 	case "DEC":
 		return v.UInt, nil
@@ -28,17 +31,17 @@ func FormatValue(v Value, format string) (any, error) {
 	}
 }
 
-func GetBit(v Value, idx int, bitOrder BitOrder) (uint64, error) {
+func GetBit(v decoder.Value, idx int, bitOrder ast.BitOrder) (uint64, error) {
 	if idx < 0 || int64(idx) >= v.Len {
 		return 0, fmt.Errorf("bit index %d out of range for %q", idx, v.Name)
 	}
 
 	switch bitOrder {
-	case MSB_FIRST:
+	case ast.MSB_FIRST:
 		shift := v.Len - int64(idx) - 1
 		return (v.UInt >> shift) & 1, nil
 
-	case LSB_FIRST:
+	case ast.LSB_FIRST:
 		return (v.UInt >> idx) & 1, nil
 
 	default:

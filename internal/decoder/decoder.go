@@ -1,7 +1,9 @@
-package pdl
+package decoder
 
 import (
 	"fmt"
+
+	"github.com/elecbug/pdl/internal/ast"
 )
 
 type Value struct {
@@ -19,7 +21,7 @@ type DecodeResult struct {
 	Values map[string]Value
 }
 
-func Decode(doc *Document, data []byte) (*DecodeResult, error) {
+func Decode(doc *ast.Document, data []byte) (*DecodeResult, error) {
 	ctx := &decodeContext{
 		doc:    doc,
 		data:   data,
@@ -48,13 +50,13 @@ func Decode(doc *Document, data []byte) (*DecodeResult, error) {
 }
 
 type decodeContext struct {
-	doc    *Document
+	doc    *ast.Document
 	data   []byte
 	values map[string]Value
 	vars   map[string]int64
 }
 
-func (c *decodeContext) decodeDef(def Def) error {
+func (c *decodeContext) decodeDef(def ast.Def) error {
 	from, err := c.evalExpr(def.From)
 	if err != nil {
 		return fmt.Errorf("decode %s from: %w", def.Name, err)
@@ -73,7 +75,7 @@ func (c *decodeContext) decodeDef(def Def) error {
 			return fmt.Errorf("decode %s to: %w", def.Name, err)
 		}
 
-		if _, ok := def.To.(EndExpr); ok {
+		if _, ok := def.To.(ast.EndExpr); ok {
 			length = int64(len(c.data))*8 - from
 		} else {
 			length = to - from + 1
@@ -114,29 +116,29 @@ func (c *decodeContext) decodeDef(def Def) error {
 	return nil
 }
 
-func (c *decodeContext) evalExpr(expr Expr) (int64, error) {
+func (c *decodeContext) evalExpr(expr ast.Expr) (int64, error) {
 	switch e := expr.(type) {
-	case NumberExpr:
+	case ast.NumberExpr:
 		return e.Value, nil
 
-	case IdentExpr:
+	case ast.IdentExpr:
 		v, ok := c.vars[e.Name]
 		if !ok {
 			return 0, fmt.Errorf("undefined variable %q", e.Name)
 		}
 		return v, nil
 
-	case FieldValueExpr:
+	case ast.FieldValueExpr:
 		v, ok := c.values[e.Name]
 		if !ok {
 			return 0, fmt.Errorf("field %q is not decoded yet", e.Name)
 		}
 		return int64(v.UInt), nil
 
-	case EndExpr:
+	case ast.EndExpr:
 		return int64(len(c.data))*8 - 1, nil
 
-	case BinaryExpr:
+	case ast.BinaryExpr:
 		left, err := c.evalExpr(e.Left)
 		if err != nil {
 			return 0, err

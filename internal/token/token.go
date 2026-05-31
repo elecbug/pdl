@@ -1,4 +1,4 @@
-package pdl
+package token
 
 type TokenType string
 

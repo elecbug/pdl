@@ -1,11 +1,14 @@
-package pdl
+package extractor
 
 import (
 	"fmt"
 	"strconv"
+
+	"github.com/elecbug/pdl/internal/ast"
+	"github.com/elecbug/pdl/internal/decoder"
 )
 
-func BuildJSON(doc *Document, result *DecodeResult) (any, error) {
+func BuildJSON(doc *ast.Document, result *decoder.DecodeResult) (any, error) {
 	root := map[string]any{}
 
 	for _, rule := range doc.Outputs {
