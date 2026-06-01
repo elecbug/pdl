@@ -1,4 +1,4 @@
-package extractor_test
+package json_out_test
 
 import (
 	"testing"
