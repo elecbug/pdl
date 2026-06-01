@@ -6,10 +6,7 @@ import (
 	"os"
 	"time"
 
-	"github.com/elecbug/pdl/internal/decoder"
-	"github.com/elecbug/pdl/internal/document"
-	"github.com/elecbug/pdl/internal/extractor/json_out"
-	"github.com/elecbug/pdl/internal/parser"
+	"github.com/elecbug/pdl"
 )
 
 func main() {
@@ -25,17 +22,17 @@ func main() {
 	}
 	log.Printf("Reading file: %v", time.Since(now))
 
-	var doc *document.Document
+	var doc *pdl.Document
 	{
 		now = time.Now()
-		doc, err = parser.ParseString(string(src))
+		doc, err = pdl.GenerateDocument(string(src))
 		if err != nil {
 			log.Fatalf("failed to parse PDL file %s: %v", srcFile, err)
 		}
 		log.Printf("Parsing: %v", time.Since(now))
 
 		now = time.Now()
-		jsonData, err := doc.Serialize()
+		jsonData, err := pdl.SerializeDocument(doc)
 		if err != nil {
 			log.Fatalf("failed to serialize document: %v", err)
 		}
@@ -53,7 +50,7 @@ func main() {
 			log.Fatalf("failed to read JSON file: %v", err)
 		}
 
-		doc, err = document.Deserialize(jsonData)
+		doc, err = pdl.DeserializeDocument(jsonData)
 		if err != nil {
 			log.Fatalf("failed to deserialize JSON file: %v", err)
 		}
@@ -78,21 +75,14 @@ func main() {
 	}
 
 	now = time.Now()
-	result, err := decoder.Decode(doc, packet)
+	result, err := pdl.ExtractJSON(doc, packet)
 	if err != nil {
-		log.Fatalf("failed to decode packet: %v", err)
+		log.Fatalf("failed to extract JSON: %v", err)
 	}
 	log.Printf("Decoding: %v", time.Since(now))
 
 	now = time.Now()
-	obj, err := json_out.BuildJSON(doc, result)
-	if err != nil {
-		log.Fatalf("failed to build JSON: %v", err)
-	}
-	log.Printf("Building JSON: %v", time.Since(now))
-
-	now = time.Now()
-	jsonData, err := json.MarshalIndent(obj, "", "    ")
+	jsonData, err := json.MarshalIndent(result, "", "    ")
 	if err != nil {
 		log.Fatalf("failed to marshal JSON: %v", err)
 	}
