@@ -20,8 +20,8 @@ func BuildJSON(doc *document.Document, result *decoder.Result) (any, error) {
 
 		var outValue any
 
-		if rule.BitIndex != nil {
-			bit, err := formatter.GetBit(value, *rule.BitIndex, doc.BitOrder)
+		if rule.HasBitIndex {
+			bit, err := formatter.GetBit(value, rule.BitIndex, doc.BitOrder)
 			if err != nil {
 				return nil, err
 			}

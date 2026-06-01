@@ -41,8 +41,10 @@ type Out struct {
 	Path   string
 	Format string
 
-	BitIndex *int
-	Map      map[string]string
+	HasBitIndex bool
+	BitIndex    int
+
+	Map map[string]string
 }
 
 var inited = false

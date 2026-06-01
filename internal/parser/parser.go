@@ -310,7 +310,8 @@ func (p *Parser) parseOutLine() (document.Out, error) {
 		}
 
 		idx := int(v)
-		out.BitIndex = &idx
+		out.HasBitIndex = true
+		out.BitIndex = idx
 		p.next()
 
 		if err := p.expect(token.RANGLE_SIGN); err != nil {

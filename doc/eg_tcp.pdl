@@ -42,42 +42,42 @@ out json {
     payload        payload               HEX
 
     # In BIG_ENDIAN mode, flags<0> is MSB and flags<7> is LSB.
-    flags<0> cwr {
+    flags<0> flag.cwr {
         0 : false
         1 : true
     }
 
-    flags<1> ece {
+    flags<1> flag.ece {
         0 : false
         1 : true
     }
 
-    flags<2> urg {
+    flags<2> flag.urg {
         0 : false
         1 : true
     }
 
-    flags<3> ack_flag {
+    flags<3> flag.ack {
         0 : false
         1 : true
     }
 
-    flags<4> psh {
+    flags<4> flag.psh {
         0 : false
         1 : true
     }
 
-    flags<5> rst {
+    flags<5> flag.rst {
         0 : false
         1 : true
     }
 
-    flags<6> syn {
+    flags<6> flag.syn {
         0 : false
         1 : true
     }
 
-    flags<7> fin {
+    flags<7> flag.fin {
         0 : false
         1 : true
     }
