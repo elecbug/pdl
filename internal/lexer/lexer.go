@@ -16,7 +16,7 @@ type Lexer struct {
 	col  int
 }
 
-func NewLexer(input string) *Lexer {
+func New(input string) *Lexer {
 	return &Lexer{
 		input: []rune(input),
 		line:  1,

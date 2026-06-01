@@ -9,7 +9,7 @@ import (
 	"github.com/elecbug/pdl/internal/formatter"
 )
 
-func BuildJSON(doc *document.Document, result *decoder.DecodeResult) (any, error) {
+func BuildJSON(doc *document.Document, result *decoder.Result) (any, error) {
 	root := map[string]any{}
 
 	for _, rule := range doc.Outs {
