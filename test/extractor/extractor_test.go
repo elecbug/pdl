@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	"github.com/elecbug/pdl/internal/decoder"
-	"github.com/elecbug/pdl/internal/json_out"
+	"github.com/elecbug/pdl/internal/extractor/json_out"
 	"github.com/elecbug/pdl/internal/parser"
 )
 
@@ -26,7 +26,7 @@ def {
     reserved       from 100   length 3
     ns             from 103   length 1
     flags          from 104   length 8
-	test_flags	   from 104+6 length 2
+	test_flags	   from 104+4 length 4
     window         from 112   length 16
     checksum       from 128   length 16
     urgent_pointer from 144   length 16
@@ -48,6 +48,16 @@ out json {
     options        options               HEX
     payload        payload               HEX
 
+	flags<4> flags.psh {
+		0 : false
+		1 : true
+	}
+
+	flags<5> flags.rst {
+		0 : false
+		1 : true
+	}
+
     flags<6> flags.syn {
         0 : false
         1 : true
@@ -59,10 +69,22 @@ out json {
     }
 
 	test_flags test_flags {
-		0b00 : "none"
-		0b01 : "fin"
-		0b10 : "syn"
-		0b11 : "both"
+		0b0000 : "none"
+		0b0001 : "fin"
+		0b0010 : "syn"
+		0b0011 : "fin+syn"
+		0b0100 : "rst"
+		0b0101 : "fin+rst"
+		0b0110 : "syn+rst"
+		0b0111 : "fin+syn+rst"
+		0b1000 : "psh"
+		0b1001 : "fin+psh"
+		0b1010 : "syn+psh"
+		0b1011 : "fin+syn+psh"
+		0b1100 : "rst+psh"
+		0b1101 : "fin+rst+psh"
+		0b1110 : "syn+rst+psh"
+		0b1111 : "all"
 	}
 }
 `
@@ -79,7 +101,7 @@ func TestBuildJSONTCP(t *testing.T) {
 		0x00, 0x00, 0x00, 0x01,
 		0x00, 0x00, 0x00, 0x00,
 		0x50,
-		0x02,
+		0x0a,
 		0x20, 0x00,
 		0xab, 0xcd,
 		0x00, 0x00,
@@ -120,8 +142,16 @@ func TestBuildJSONTCP(t *testing.T) {
 		t.Fatalf("flags.fin = %v, want false", flags["fin"])
 	}
 
-	if root["test_flags"] != "syn" {
-		t.Fatalf("test_flags = %v, want syn", root["test_flags"])
+	if flags["psh"] != true {
+		t.Fatalf("flags.psh = %v, want true", flags["psh"])
+	}
+
+	if flags["rst"] != false {
+		t.Fatalf("flags.rst = %v, want false", flags["rst"])
+	}
+
+	if root["test_flags"] != "syn+psh" {
+		t.Fatalf("test_flags = %v, want syn+psh", root["test_flags"])
 	}
 
 	if root["payload"] != "DEADBEEF" {
