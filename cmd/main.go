@@ -8,7 +8,7 @@ import (
 
 	"github.com/elecbug/pdl/internal/decoder"
 	"github.com/elecbug/pdl/internal/document"
-	"github.com/elecbug/pdl/internal/extractor"
+	"github.com/elecbug/pdl/internal/extractor/json_out"
 	"github.com/elecbug/pdl/internal/parser"
 )
 
@@ -85,7 +85,7 @@ func main() {
 	log.Printf("Decoding: %v", time.Since(now))
 
 	now = time.Now()
-	obj, err := extractor.BuildJSON(doc, result)
+	obj, err := json_out.BuildJSON(doc, result)
 	if err != nil {
 		log.Fatalf("failed to build JSON: %v", err)
 	}

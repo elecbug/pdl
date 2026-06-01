@@ -1,4 +1,4 @@
-package extractor
+package json_out
 
 import (
 	"fmt"
@@ -6,6 +6,7 @@ import (
 
 	"github.com/elecbug/pdl/internal/decoder"
 	"github.com/elecbug/pdl/internal/document"
+	"github.com/elecbug/pdl/internal/formatter"
 )
 
 func BuildJSON(doc *document.Document, result *decoder.DecodeResult) (any, error) {
@@ -20,7 +21,7 @@ func BuildJSON(doc *document.Document, result *decoder.DecodeResult) (any, error
 		var outValue any
 
 		if rule.BitIndex != nil {
-			bit, err := GetBit(value, *rule.BitIndex, doc.BitOrder)
+			bit, err := formatter.GetBit(value, *rule.BitIndex, doc.BitOrder)
 			if err != nil {
 				return nil, err
 			}
@@ -30,7 +31,7 @@ func BuildJSON(doc *document.Document, result *decoder.DecodeResult) (any, error
 
 			if rule.Map != nil {
 				if mapped, ok := rule.Map[key]; ok {
-					outValue = convertMappedValue(mapped)
+					outValue = formatter.ConvertMappedValue(mapped)
 				}
 			}
 		} else if rule.Map != nil {
@@ -38,10 +39,10 @@ func BuildJSON(doc *document.Document, result *decoder.DecodeResult) (any, error
 			outValue = value.UInt
 
 			if mapped, ok := rule.Map[key]; ok {
-				outValue = convertMappedValue(mapped)
+				outValue = formatter.ConvertMappedValue(mapped)
 			}
 		} else {
-			formatted, err := FormatValue(value, rule.Format)
+			formatted, err := formatter.FormatValue(value, rule.Format)
 			if err != nil {
 				return nil, err
 			}
@@ -54,15 +55,4 @@ func BuildJSON(doc *document.Document, result *decoder.DecodeResult) (any, error
 	}
 
 	return root, nil
-}
-
-func convertMappedValue(s string) any {
-	switch s {
-	case "true":
-		return true
-	case "false":
-		return false
-	default:
-		return s
-	}
 }

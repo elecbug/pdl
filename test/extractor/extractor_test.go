@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	"github.com/elecbug/pdl/internal/decoder"
-	"github.com/elecbug/pdl/internal/extractor"
+	"github.com/elecbug/pdl/internal/json_out"
 	"github.com/elecbug/pdl/internal/parser"
 )
 
@@ -91,7 +91,7 @@ func TestBuildJSONTCP(t *testing.T) {
 		t.Fatalf("Decode failed: %v", err)
 	}
 
-	obj, err := extractor.BuildJSON(doc, result)
+	obj, err := json_out.BuildJSON(doc, result)
 	if err != nil {
 		t.Fatalf("BuildJSON failed: %v", err)
 	}

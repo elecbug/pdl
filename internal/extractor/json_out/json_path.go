@@ -1,4 +1,4 @@
-package extractor
+package json_out
 
 import (
 	"fmt"

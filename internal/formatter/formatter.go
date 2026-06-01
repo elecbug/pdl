@@ -1,4 +1,4 @@
-package extractor
+package formatter
 
 import (
 	"encoding/hex"
@@ -49,5 +49,16 @@ func GetBit(v decoder.Value, idx int, bitOrder order.BitOrder) (uint64, error) {
 
 	default:
 		return 0, fmt.Errorf("unknown bit order %q", bitOrder)
+	}
+}
+
+func ConvertMappedValue(s string) any {
+	switch s {
+	case "true":
+		return true
+	case "false":
+		return false
+	default:
+		return s
 	}
 }
