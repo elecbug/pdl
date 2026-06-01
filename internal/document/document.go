@@ -2,6 +2,7 @@ package document
 
 import (
 	"bytes"
+	"encoding/base64"
 	"encoding/gob"
 
 	"github.com/elecbug/pdl/internal/document/order"
@@ -67,7 +68,9 @@ func (d *Document) Serialize() ([]byte, error) {
 		return nil, err
 	}
 
-	return buf.Bytes(), nil
+	base64 := base64.StdEncoding.EncodeToString(buf.Bytes())
+
+	return []byte(base64), nil
 }
 
 func Deserialize(data []byte) (*Document, error) {
@@ -75,7 +78,12 @@ func Deserialize(data []byte) (*Document, error) {
 
 	var doc Document
 
-	dec := gob.NewDecoder(bytes.NewReader(data))
+	decoded, err := base64.StdEncoding.DecodeString(string(data))
+	if err != nil {
+		return nil, err
+	}
+
+	dec := gob.NewDecoder(bytes.NewReader(decoded))
 	if err := dec.Decode(&doc); err != nil {
 		return nil, err
 	}
