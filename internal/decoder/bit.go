@@ -6,6 +6,8 @@ import (
 	"github.com/elecbug/pdl/internal/document/order"
 )
 
+// extractBits extracts a bit slice from data starting at the given bit offset and with the given length.
+// The bits are returned in a byte slice, where the first bit is the MSB of the first byte.
 func extractBits(data []byte, from int64, length int64) ([]byte, error) {
 	if from < 0 || length < 0 || from+length > int64(len(data))*8 {
 		return nil, fmt.Errorf("invalid bit range: from=%d, length=%d", from, length)
@@ -32,6 +34,7 @@ func extractBits(data []byte, from int64, length int64) ([]byte, error) {
 	return out, nil
 }
 
+// bitsToUint converts a bit slice to a uint64, interpreting the bits according to the specified byte order.
 func bitsToUint(bits []byte, bitLen int64, byteOrder order.ByteOrder) (uint64, error) {
 	if bitLen > 64 {
 		return 0, fmt.Errorf("cannot convert field longer than 64 bits to uint: %d", bitLen)

@@ -6,21 +6,31 @@ import (
 	"github.com/elecbug/pdl/internal/document"
 )
 
+// Value represents a decoded field value, including its name, raw bits, length in bits, unsigned
+// integer value, and mode (e.g., "hex", "dec").
 type Value struct {
+	// The name of the decoded field, as defined in the document.
 	Name string
-
+	// The raw bits of the decoded field, extracted from the input data.
 	Bits []byte
-	Len  int64
-
+	// The length of the decoded field in bits.
+	Len int64
+	// The unsigned integer value of the decoded field, derived from the raw bits.
 	UInt uint64
-
+	// The mode of the decoded field, such as "hex", "dec", "bin", or "bool", which can be used for formatting the value.
 	Mode string
 }
 
+// Result represents the outcome of the decoding process, containing a map of decoded field values
+// keyed by their names.
 type Result struct {
+	// A map of decoded field values, keyed by field name.
 	Values map[string]Value
 }
 
+// Decode takes a document and input data, and returns the decoded result or an error if the decoding
+// process fails. It initializes a decodeContext, evaluates any variables defined in the document,
+// and then decodes each field definition according to the specified rules.
 func Decode(doc *document.Document, data []byte) (*Result, error) {
 	ctx := &decodeContext{
 		doc:    doc,

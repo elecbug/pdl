@@ -1,9 +1,8 @@
-package decoder_test
+package decoder
 
 import (
 	"testing"
 
-	"github.com/elecbug/pdl/internal/decoder"
 	"github.com/elecbug/pdl/internal/parser"
 )
 
@@ -37,7 +36,7 @@ out json {
 }
 `
 
-func TestDecodeTCP(t *testing.T) {
+func TestDecode(t *testing.T) {
 	doc, err := parser.ParseString(tcpPDL)
 	if err != nil {
 		t.Fatalf("ParseString failed: %v", err)
@@ -56,7 +55,7 @@ func TestDecodeTCP(t *testing.T) {
 		0xde, 0xad, 0xbe, 0xef,
 	}
 
-	result, err := decoder.Decode(doc, packet)
+	result, err := Decode(doc, packet)
 	if err != nil {
 		t.Fatalf("Decode failed: %v", err)
 	}

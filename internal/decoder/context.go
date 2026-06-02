@@ -6,13 +6,21 @@ import (
 	"github.com/elecbug/pdl/internal/document"
 )
 
+// decodeContext holds the state during the decoding process, including the document, input data,
+// encoded values, and variables.
 type decodeContext struct {
-	doc    *document.Document
-	data   []byte
+	// The document being decoded, containing definitions and variables.
+	doc *document.Document
+	// The input packet data to decode.
+	data []byte
+	// A map of decoded field values, keyed by field name.
 	values map[string]Value
-	vars   map[string]int64
+	// A map of variable values, keyed by variable name.
+	vars map[string]int64
 }
 
+// decodeDef decodes a single field definition from the document, extracting the specified bits from
+// the input data and storing the result in the context's values map.
 func (c *decodeContext) decodeDef(def document.Def) error {
 	from, err := c.evalExpr(def.From)
 	if err != nil {
@@ -80,6 +88,8 @@ func (c *decodeContext) decodeDef(def document.Def) error {
 	return nil
 }
 
+// evalExpr evaluates an expression in the context of the current variables and decoded values,
+// returning the resulting integer value or an error if the expression is invalid.
 func (c *decodeContext) evalExpr(expr document.Expr) (int64, error) {
 	switch e := expr.(type) {
 	case document.NumberExpr:
