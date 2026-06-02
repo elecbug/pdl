@@ -10,13 +10,20 @@ import (
 	"github.com/elecbug/pdl/internal/token"
 )
 
+// Parser is responsible for parsing the token stream produced by the lexer and constructing a Document structure
+// that represents the PDL source code. It maintains the current and peek tokens to facilitate lookahead during parsing.
 type Parser struct {
+	// The lexer instance used to tokenize the input source code.
 	l *lexer.Lexer
 
-	cur  token.Token
+	// The current token being processed by the parser.
+	cur token.Token
+	// The next token in the stream, used for lookahead to make parsing decisions.
 	peek token.Token
 }
 
+// New creates a new Parser instance with the given input string. It initializes the lexer and reads the first two tokens
+// to set up the current and peek tokens for parsing.
 func New(input string) *Parser {
 	l := lexer.New(input)
 
@@ -27,10 +34,15 @@ func New(input string) *Parser {
 	return p
 }
 
+// ParseString is a convenience function that creates a new Parser instance with the given input string and calls the Parse method to produce a Document.
 func ParseString(input string) (*document.Document, error) {
 	return New(input).Parse()
 }
 
+// Parse processes the token stream and constructs a Document structure based on the PDL source code.
+// It handles the various sections of the document, such as packet definition, mode settings, variable
+// definitions, field definitions, and output specifications. If it encounters any syntax errors or
+// unexpected tokens, it returns an error with a descriptive message.
 func (p *Parser) Parse() (*document.Document, error) {
 	doc := &document.Document{}
 
@@ -73,6 +85,8 @@ func (p *Parser) Parse() (*document.Document, error) {
 	return doc, nil
 }
 
+// parsePacket parses the packet definition section of the document, expecting the "packet" keyword
+// followed by an identifier for the packet name. It sets the PacketName field of the Document structure accordingly.
 func (p *Parser) parsePacket(doc *document.Document) error {
 	if err := p.expect(token.PACKET_KEYWORD); err != nil {
 		return err
@@ -87,6 +101,8 @@ func (p *Parser) parsePacket(doc *document.Document) error {
 	return nil
 }
 
+// parseSetMode parses the mode settings section of the document, expecting the "set mode" keywords followed by byte order and bit order specifications.
+// It updates the ByteOrder and BitOrder fields of the Document structure based on the parsed values. If it encounters unknown byte or bit order values, it returns an error.
 func (p *Parser) parseSetMode(doc *document.Document) error {
 	if err := p.expect(token.SET_KEYWORD); err != nil {
 		return err
@@ -133,6 +149,8 @@ func (p *Parser) parseSetMode(doc *document.Document) error {
 	return nil
 }
 
+// parseVarBlock parses the variable definitions section of the document, expecting the "var" keyword followed by a block of variable definitions enclosed in braces.
+// It returns a slice of Var structures representing the parsed variable definitions. If it encounters any syntax errors or unexpected tokens, it returns an error.
 func (p *Parser) parseVarBlock() ([]document.Var, error) {
 	if err := p.expect(token.VAR_KEYWORD); err != nil {
 		return nil, err
@@ -159,6 +177,8 @@ func (p *Parser) parseVarBlock() ([]document.Var, error) {
 	return vars, nil
 }
 
+// parseVarLine parses a single variable definition line within the variable block. It expects an identifier for the variable name, followed by an equal sign and an expression representing the variable's value.
+// It returns a Var structure representing the parsed variable definition. If it encounters any syntax errors or unexpected tokens, it returns an error.
 func (p *Parser) parseVarLine() (document.Var, error) {
 	if p.cur.Type != token.IDENT {
 		return document.Var{}, p.errf("expected variable name, got %s %q", p.cur.Type, p.cur.Lit)
@@ -182,6 +202,8 @@ func (p *Parser) parseVarLine() (document.Var, error) {
 	}, nil
 }
 
+// parseDefBlock parses the field definitions section of the document, expecting the "def" keyword followed by a block of field definitions enclosed in braces.
+// It returns a slice of Def structures representing the parsed field definitions. If it encounters any syntax errors or unexpected tokens, it returns an error.
 func (p *Parser) parseDefBlock() ([]document.Def, error) {
 	if err := p.expect(token.DEF_KEYWORD); err != nil {
 		return nil, err
@@ -208,6 +230,8 @@ func (p *Parser) parseDefBlock() ([]document.Def, error) {
 	return defs, nil
 }
 
+// parseDefLine parses a single field definition line within the field definitions block. It expects an identifier for the field name, followed by the "from" keyword and an expression representing the field's starting position.
+// It returns a Def structure representing the parsed field definition. If it encounters any syntax errors or unexpected tokens, it returns an error.
 func (p *Parser) parseDefLine() (document.Def, error) {
 	if p.cur.Type != token.IDENT {
 		return document.Def{}, p.errf("expected field name in def block, got %s %q", p.cur.Type, p.cur.Lit)
@@ -256,6 +280,8 @@ func (p *Parser) parseDefLine() (document.Def, error) {
 	return def, nil
 }
 
+// parseOutBlock parses the output specifications section of the document, expecting the "out json" keywords followed by a block of output definitions enclosed in braces.
+// It returns a slice of Out structures representing the parsed output specifications. If it encounters any syntax errors or unexpected tokens, it returns an error.
 func (p *Parser) parseOutBlock() ([]document.Out, error) {
 	if err := p.expect(token.OUT_KEYWORD); err != nil {
 		return nil, err
@@ -286,6 +312,7 @@ func (p *Parser) parseOutBlock() ([]document.Out, error) {
 	return outs, nil
 }
 
+// parseOutLine parses a single output specification line within the output block. It expects an identifier for the field name, followed by an optional bit index specification and an output path.
 func (p *Parser) parseOutLine() (document.Out, error) {
 	if p.cur.Type != token.IDENT {
 		return document.Out{}, p.errf("expected field name in out block, got %s %q", p.cur.Type, p.cur.Lit)
@@ -348,6 +375,7 @@ func (p *Parser) parseOutLine() (document.Out, error) {
 	return document.Out{}, p.errf("expected format or map block in out line, got %s %q", p.cur.Type, p.cur.Lit)
 }
 
+// parseMapBlock parses a block of key-value pairs enclosed in braces, which is used for defining mappings in output specifications. It returns a map[string]string representing the parsed key-value pairs. If it encounters any syntax errors or unexpected tokens, it returns an error.
 func (p *Parser) parseMapBlock() (map[string]string, error) {
 	if err := p.expect(token.LBRACE_SIGN); err != nil {
 		return nil, err
@@ -399,6 +427,7 @@ func (p *Parser) parseMapBlock() (map[string]string, error) {
 	return m, nil
 }
 
+// parseExpr parses an expression with operator precedence. It takes a minimum precedence level as an argument and returns the parsed expression as a document.Expr.
 func (p *Parser) parseExpr(minPrec int) (document.Expr, error) {
 	left, err := p.parsePrimary()
 	if err != nil {
@@ -429,6 +458,7 @@ func (p *Parser) parseExpr(minPrec int) (document.Expr, error) {
 	return left, nil
 }
 
+// parsePrimary parses a primary expression, which can be a number literal, an identifier, a field value reference, an end expression, or a parenthesized expression. It returns the parsed expression as a document.Expr. If it encounters any syntax errors or unexpected tokens, it returns an error.
 func (p *Parser) parsePrimary() (document.Expr, error) {
 	switch p.cur.Type {
 	case token.NUMBER:
@@ -480,6 +510,7 @@ func (p *Parser) parsePrimary() (document.Expr, error) {
 	}
 }
 
+// parseNumber parses a raw string representing a number literal, which can be in decimal, binary (prefixed with "0b"), or hexadecimal (prefixed with "0x") format. It returns the parsed integer value or an error if the input is not a valid number.
 func parseNumber(raw string) (int64, error) {
 	switch {
 	case strings.HasPrefix(raw, "0b") || strings.HasPrefix(raw, "0B"):

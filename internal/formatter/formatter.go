@@ -9,6 +9,8 @@ import (
 	"github.com/elecbug/pdl/internal/document/order"
 )
 
+// FormatValue takes a decoded value and a format string, and returns the value formatted according
+// to the specified format.
 func FormatValue(v decoder.Value, format string) (any, error) {
 	switch format {
 	case "DEC":
@@ -34,6 +36,8 @@ func FormatValue(v decoder.Value, format string) (any, error) {
 	}
 }
 
+// GetBit retrieves the value of a specific bit from a decoded value, considering the specified bit order.
+// It returns an error if the bit index is out of range or if the bit order is unknown.
 func GetBit(v decoder.Value, idx int, bitOrder order.BitOrder) (uint64, error) {
 	if idx < 0 || int64(idx) >= v.Len {
 		return 0, fmt.Errorf("bit index %d out of range for %q", idx, v.Name)
@@ -52,6 +56,8 @@ func GetBit(v decoder.Value, idx int, bitOrder order.BitOrder) (uint64, error) {
 	}
 }
 
+// ConvertMappedValue converts a string representation of a value to its corresponding Go type.
+// It supports boolean values ("true" and "false") and returns the original string for other values.
 func ConvertMappedValue(s string) any {
 	switch s {
 	case "true":

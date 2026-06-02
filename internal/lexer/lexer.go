@@ -8,14 +8,21 @@ import (
 	"github.com/elecbug/pdl/internal/token"
 )
 
+// Lexer is responsible for tokenizing the input PDL source code. It reads the input string and produces
+// a stream of tokens that can be consumed by the parser.
 type Lexer struct {
+	// The input source code as a slice of runes, allowing for proper handling of Unicode characters.
 	input []rune
-	pos   int
+	// The current position in the input (index of the next character to read).
+	pos int
 
+	// The current line number, starting at 1.
 	line int
-	col  int
+	// The current column number, starting at 1.
+	col int
 }
 
+// New creates a new Lexer instance with the given input string. It initializes the line and column numbers to 1.
 func New(input string) *Lexer {
 	return &Lexer{
 		input: []rune(input),
@@ -24,6 +31,8 @@ func New(input string) *Lexer {
 	}
 }
 
+// NextToken reads the next token from the input and returns it. It handles whitespace, comments, identifiers,
+// numbers, strings, and various punctuation. If it encounters an unrecognized character, it returns an ILLEGAL token.
 func (l *Lexer) NextToken() token.Token {
 	l.skipWhitespaceAndComments()
 
@@ -109,6 +118,9 @@ func (l *Lexer) NextToken() token.Token {
 	}
 }
 
+// readString reads a string literal from the input, starting with the opening quote. It continues
+// until it finds a closing quote or reaches the end of the line/input. If it encounters an
+// unterminated string, it returns an error.
 func (l *Lexer) readString() (string, error) {
 	l.advance() // skip opening "
 
@@ -130,6 +142,8 @@ func (l *Lexer) readString() (string, error) {
 	}
 }
 
+// skipWhitespaceAndComments advances the lexer's position past any whitespace characters and comments.
+// It continues to skip until it encounters a non-whitespace, non-comment character or reaches the end of the input.
 func (l *Lexer) skipWhitespaceAndComments() {
 	for {
 		ch := l.peek()
@@ -151,6 +165,8 @@ func (l *Lexer) skipWhitespaceAndComments() {
 	}
 }
 
+// readIdent reads an identifier from the input, starting with a valid identifier character. It continues
+// until it encounters a character that is not valid in an identifier. It returns the string representation of the identifier.
 func (l *Lexer) readIdent() string {
 	start := l.pos
 
@@ -161,6 +177,8 @@ func (l *Lexer) readIdent() string {
 	return string(l.input[start:l.pos])
 }
 
+// readNumber reads a number from the input, supporting decimal, binary (0b prefix), and hexadecimal (0x prefix) formats. It continues
+// until it encounters a character that is not valid in a number. It returns the string representation of the number.
 func (l *Lexer) readNumber() string {
 	start := l.pos
 
@@ -189,6 +207,7 @@ func (l *Lexer) readNumber() string {
 	return string(l.input[start:l.pos])
 }
 
+// peek returns the next character in the input without advancing the position. If it reaches the end of the input, it returns 0.
 func (l *Lexer) peek() rune {
 	if l.pos >= len(l.input) {
 		return 0
@@ -196,6 +215,8 @@ func (l *Lexer) peek() rune {
 	return l.input[l.pos]
 }
 
+// peekN returns the character at the specified offset from the current position without advancing the position.
+// If it reaches the end of the input, it returns 0.
 func (l *Lexer) peekN(n int) rune {
 	idx := l.pos + n
 	if idx >= len(l.input) {
@@ -204,6 +225,8 @@ func (l *Lexer) peekN(n int) rune {
 	return l.input[idx]
 }
 
+// advance moves the lexer's position forward by one character and updates the line and column numbers accordingly.
+// It returns the character that was advanced over. If it reaches the end of the input, it returns 0.
 func (l *Lexer) advance() rune {
 	ch := l.peek()
 	if ch == 0 {
@@ -222,10 +245,12 @@ func (l *Lexer) advance() rune {
 	return ch
 }
 
+// isIdentStart checks if the given character is a valid starting character for an identifier, which can be a letter or an underscore.
 func isIdentStart(ch rune) bool {
 	return unicode.IsLetter(ch) || ch == '_'
 }
 
+// isIdentPart checks if the given character is a valid part of an identifier, which can be a letter, digit, underscore, dot, or square brackets.
 func isIdentPart(ch rune) bool {
 	return unicode.IsLetter(ch) ||
 		unicode.IsDigit(ch) ||
@@ -235,6 +260,7 @@ func isIdentPart(ch rune) bool {
 		ch == ']'
 }
 
+// isNumberPart checks if the given character is a valid part of a number, which can be a digit or a hexadecimal character (a-f, A-F).
 func isNumberPart(ch rune) bool {
 	return unicode.IsDigit(ch) ||
 		(ch >= 'a' && ch <= 'f') ||
