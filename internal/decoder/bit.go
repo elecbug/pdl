@@ -6,7 +6,11 @@ import (
 	"github.com/elecbug/pdl/internal/document/order"
 )
 
-func extractBits(data []byte, from int64, length int64) []byte {
+func extractBits(data []byte, from int64, length int64) ([]byte, error) {
+	if from < 0 || length < 0 || from+length > int64(len(data))*8 {
+		return nil, fmt.Errorf("invalid bit range: from=%d, length=%d", from, length)
+	}
+
 	out := make([]byte, (length+7)/8)
 
 	for i := int64(0); i < length; i++ {
@@ -25,7 +29,7 @@ func extractBits(data []byte, from int64, length int64) []byte {
 		out[dstByteIdx] |= bit << (7 - dstBitIdx)
 	}
 
-	return out
+	return out, nil
 }
 
 func bitsToUint(bits []byte, bitLen int64, byteOrder order.ByteOrder) (uint64, error) {

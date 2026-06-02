@@ -21,6 +21,7 @@ func TestExtractBits(t *testing.T) {
 		from     int64
 		length   int64
 		expected []byte
+		wantErr  bool
 	}{
 		{
 			name:     "Extract bits 0-15",
@@ -28,6 +29,7 @@ func TestExtractBits(t *testing.T) {
 			from:     0,
 			length:   16,
 			expected: []byte{0b00010000, 0b00100000},
+			wantErr:  false,
 		},
 		{
 			name:     "Extract bits 4-15",
@@ -35,6 +37,7 @@ func TestExtractBits(t *testing.T) {
 			from:     4,
 			length:   12,
 			expected: []byte{0b00000010, 0b00000000},
+			wantErr:  false,
 		},
 		{
 			name:     "Extract bits 8-27",
@@ -42,6 +45,7 @@ func TestExtractBits(t *testing.T) {
 			from:     8,
 			length:   20,
 			expected: []byte{0b00100000, 0b01000000, 0b10000000},
+			wantErr:  false,
 		},
 		{
 			name:     "Extract bits 60-67",
@@ -49,6 +53,7 @@ func TestExtractBits(t *testing.T) {
 			from:     60,
 			length:   8,
 			expected: []byte{0b10000001},
+			wantErr:  false,
 		},
 		{
 			name:     "Extract bits 96-106",
@@ -56,6 +61,7 @@ func TestExtractBits(t *testing.T) {
 			from:     96,
 			length:   11,
 			expected: []byte{0b00010010, 0b00100000},
+			wantErr:  false,
 		},
 		{
 			name:     "Extract bits 0-127",
@@ -63,13 +69,38 @@ func TestExtractBits(t *testing.T) {
 			from:     0,
 			length:   128,
 			expected: mainData,
+			wantErr:  false,
+		},
+		{
+			name:    "Invalid range: negative from",
+			data:    mainData,
+			from:    -1,
+			length:  8,
+			wantErr: true,
+		},
+		{
+			name:    "Invalid range: negative length",
+			data:    mainData,
+			from:    0,
+			length:  -1,
+			wantErr: true,
+		},
+		{
+			name:    "Invalid range: exceeds data size",
+			data:    mainData,
+			from:    120,
+			length:  16,
+			wantErr: true,
 		},
 	}
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			extracted := extractBits(tc.data, tc.from, tc.length)
-			if !slices.Equal(extracted, tc.expected) {
+			extracted, err := extractBits(tc.data, tc.from, tc.length)
+			if (err != nil) != tc.wantErr {
+				t.Fatalf("extractBits() error = %v, wantErr %v", err, tc.wantErr)
+			}
+			if err == nil && !tc.wantErr && !slices.Equal(extracted, tc.expected) {
 				t.Errorf("Expected %v, got %v", tc.expected, extracted)
 			}
 		})

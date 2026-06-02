@@ -56,7 +56,10 @@ func (c *decodeContext) decodeDef(def document.Def) error {
 		)
 	}
 
-	bits := extractBits(c.data, from, length)
+	bits, err := extractBits(c.data, from, length)
+	if err != nil {
+		return fmt.Errorf("decode %s: %w", def.Name, err)
+	}
 
 	var u uint64
 
