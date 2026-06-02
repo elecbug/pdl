@@ -1,10 +1,6 @@
 package document
 
 import (
-	"bytes"
-	"encoding/base64"
-	"encoding/gob"
-
 	"github.com/elecbug/pdl/internal/document/order"
 )
 
@@ -73,63 +69,4 @@ type Out struct {
 	// Map is an optional mapping of decoded values to their corresponding string representations
 	// which can be used for formatting the output.
 	Map map[string]string
-}
-
-// inited indicates whether the gob package has been initialized with the necessary type registrations
-// for encoding and decoding Document instances.
-var inited = false
-
-// initGob initializes the gob package by registering the necessary types for encoding and decoding
-// Document instances. This function is called before any serialization or deserialization operations
-// to ensure the gob encoder and decoder handle the custom expression types in
-// Document.
-func initGob() {
-	if !inited {
-		gob.Register(NumberExpr{})
-		gob.Register(IdentExpr{})
-		gob.Register(FieldValueExpr{})
-		gob.Register(EndExpr{})
-		gob.Register(BinaryExpr{})
-		inited = true
-	}
-}
-
-// Serialize encodes the Document instance into a byte slice using gob encoding and base64 encoding.
-// It first initializes the gob package, then encodes the Document instance into a buffer, and finally
-// converts the encoded bytes to a base64 string before returning it as a byte slice.
-func (d *Document) Serialize() ([]byte, error) {
-	initGob()
-
-	var buf bytes.Buffer
-
-	enc := gob.NewEncoder(&buf)
-	if err := enc.Encode(d); err != nil {
-		return nil, err
-	}
-
-	base64 := base64.StdEncoding.EncodeToString(buf.Bytes())
-
-	return []byte(base64), nil
-}
-
-// Deserialize takes a byte slice containing a base64-encoded gob representation of a Document instance,
-// decodes it, and returns the resulting Document instance or an error if the deserialization process fails.
-// It first initializes the gob package, then decodes the base64 string into a buffer, and finally
-// decodes the gob data from the buffer into a Document instance.
-func Deserialize(data []byte) (*Document, error) {
-	initGob()
-
-	var doc Document
-
-	decoded, err := base64.StdEncoding.DecodeString(string(data))
-	if err != nil {
-		return nil, err
-	}
-
-	dec := gob.NewDecoder(bytes.NewReader(decoded))
-	if err := dec.Decode(&doc); err != nil {
-		return nil, err
-	}
-
-	return &doc, nil
 }

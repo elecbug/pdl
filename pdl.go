@@ -17,19 +17,6 @@ func GenerateDocument(src string) (*Document, error) {
 	return (*Document)(doc), nil
 }
 
-func SerializeDocument(d *Document) ([]byte, error) {
-	return (*document.Document)(d).Serialize()
-}
-
-func DeserializeDocument(data []byte) (*Document, error) {
-	doc, err := document.Deserialize(data)
-	if err != nil {
-		return nil, err
-	}
-
-	return (*Document)(doc), nil
-}
-
 func ExtractJSON(d *Document, packet []byte) (any, error) {
 	result, err := decoder.Decode((*document.Document)(d), packet)
 	if err != nil {

@@ -13,7 +13,6 @@ func main() {
 	var now time.Time
 
 	srcFile := "doc/eg_tcp.pdl"
-	binFile := "tmp/eg_tcp.bpdl"
 
 	now = time.Now()
 	src, err := os.ReadFile(srcFile)
@@ -22,40 +21,12 @@ func main() {
 	}
 	log.Printf("Reading file: %v", time.Since(now))
 
-	var doc *pdl.Document
-	{
-		now = time.Now()
-		doc, err = pdl.GenerateDocument(string(src))
-		if err != nil {
-			log.Fatalf("failed to parse PDL file %s: %v", srcFile, err)
-		}
-		log.Printf("Parsing: %v", time.Since(now))
-
-		now = time.Now()
-		jsonData, err := pdl.SerializeDocument(doc)
-		if err != nil {
-			log.Fatalf("failed to serialize document: %v", err)
-		}
-
-		err = os.WriteFile(binFile, jsonData, 0644)
-		if err != nil {
-			log.Fatalf("failed to write JSON file: %v", err)
-		}
-		log.Printf("Serialization: %v", time.Since(now))
+	now = time.Now()
+	doc, err := pdl.GenerateDocument(string(src))
+	if err != nil {
+		log.Fatalf("failed to parse PDL file %s: %v", srcFile, err)
 	}
-	{
-		now = time.Now()
-		jsonData, err := os.ReadFile(binFile)
-		if err != nil {
-			log.Fatalf("failed to read JSON file: %v", err)
-		}
-
-		doc, err = pdl.DeserializeDocument(jsonData)
-		if err != nil {
-			log.Fatalf("failed to deserialize JSON file: %v", err)
-		}
-		log.Printf("Deserialization: %v", time.Since(now))
-	}
+	log.Printf("Parsing: %v", time.Since(now))
 
 	packet := []byte{
 		0x00, 0x50, // src_port = 80
