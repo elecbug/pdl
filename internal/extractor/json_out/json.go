@@ -9,9 +9,12 @@ import (
 	"github.com/elecbug/pdl/internal/formatter"
 )
 
-// BuildJSON takes a document and a decoding result, and constructs a JSON-compatible Go data structure based on the output rules defined in the document.
-// It iterates through each output rule, retrieves the corresponding decoded value, applies any specified formatting or mapping,
-// and sets the value at the specified JSON path in the resulting structure. It returns the constructed JSON object or an error if any issues occur during the process.
+// BuildJSON constructs a JSON-compatible Go value from decoded values using
+// the document's output rules.
+//
+// It iterates over each output rule, retrieves the decoded field value,
+// applies optional bit extraction, mapping, or formatting, and then writes
+// the value at the configured JSON path.
 func BuildJSON(doc *document.Document, result *decoder.Result) (any, error) {
 	root := map[string]any{}
 

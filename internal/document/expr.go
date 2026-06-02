@@ -1,7 +1,7 @@
 package document
 
 // Expr represents an expression in the document, which can be a number, an identifier, a field value,
-// an end marker, or a binary expression. It serves as the base interface for all types of expressions used in the document.
+// an end marker, or a binary expression.
 type Expr interface {
 	// exprNode is a marker method to indicate that a type implements the Expr interface. It does not
 	// perform any operations and is used solely for type identification.
@@ -37,7 +37,7 @@ func (IdentExpr) exprNode() {}
 // It contains the name of the field being referenced.
 type FieldValueExpr struct {
 	// Name is the name of the field whose value is being referenced by this expression. It should correspond
-	// to a field defined in the document's Defs section, and the value should be available in the decode context.
+	// to a field defined in the document's Defs section.
 	Name string
 }
 
@@ -53,14 +53,15 @@ type EndExpr struct{}
 // perform any operations and is used solely for type identification.
 func (EndExpr) exprNode() {}
 
-// BinaryExpr represents a binary expression that combines two sub-expressions with an operator (e.g., +, -, *, /).
+// BinaryExpr combines two sub-expressions with an operator (for example,
+// +, -, *, or /).
 // It contains the operator and the left and right sub-expressions.
 type BinaryExpr struct {
 	// Op is the operator used in the binary expression, such as "+", "-", "*", or "/".
 	Op string
-	// Left is the left sub-expression of the binary expression, which can be any type of expression that implements the Expr interface.
+	// Left is the left sub-expression.
 	Left Expr
-	// Right is the right sub-expression of the binary expression, which can be any type of expression that implements the Expr interface.
+	// Right is the right sub-expression.
 	Right Expr
 }
 

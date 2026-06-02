@@ -14,9 +14,9 @@ type Document struct {
 	// The name of the packet being defined in the document.
 	PacketName string
 
-	// The byte order (endianness) used in the document, which can be either BIG_ENDIAN or LITTLE_ENDIAN.
+	// The byte order (endianness), either BIG_ENDIAN or LITTLE_ENDIAN.
 	ByteOrder order.ByteOrder
-	// The bit order used in the document, which can be either MSB_FIRST or LSB_FIRST.
+	// The bit order, either MSB_FIRST or LSB_FIRST.
 	BitOrder order.BitOrder
 
 	// A list of variables defined in the document, where each variable has a name and an associated
@@ -34,20 +34,20 @@ type Document struct {
 type Var struct {
 	// The name of the variable, which can be used in expressions within the document.
 	Name string
-	// The expression associated with the variable, which can be evaluated during decoding to produce a value.
+	// The expression associated with this variable.
 	Expr Expr
 }
 
 // Def represents a field definition in the document, specifying how to extract a field from the input
 type Def struct {
-	// The name of the field being defined, which will be used as the key for the decoded value in the result.
+	// The field name used as the key in decoded results.
 	Name string
 
 	// The expression specifying the starting bit position of the field within the input data.
 	From Expr
 	// The expression specifying the length of the field in bits, if UseLength is true.
 	Length Expr
-	// The expression specifying the ending bit position of the field within the input data, if UseTo is true.
+	// The ending bit position expression when UseTo is true.
 	To Expr
 
 	// UseLength indicates whether the Length expression should be used to determine the field's length.
@@ -60,16 +60,14 @@ type Def struct {
 type Out struct {
 	// The name of the field to output, which should correspond to a field defined in the document.
 	Field string
-	// The format to use when presenting the decoded field value, such as "hex", "dec", "bin", or "bool".
+	// The destination JSON path.
 	Path string
-	// The format string to use when formatting the decoded field value, which can include placeholders for the value.
+	// The output format, such as "hex", "dec", "bin", or "bool".
 	Format string
 
-	// Map is an optional mapping of decoded values to their corresponding string representations,
-	// which can be used for formatting the output.
+	// Whether this output maps a single bit selected by BitIndex.
 	HasBitIndex bool
-	// BitIndex specifies the index of the bit to check when HasBitIndex is true, allowing for conditional
-	// formatting based on the value of a specific bit within the decoded field.
+	// The bit index used when HasBitIndex is true.
 	BitIndex int
 
 	// Map is an optional mapping of decoded values to their corresponding string representations
@@ -83,7 +81,8 @@ var inited = false
 
 // initGob initializes the gob package by registering the necessary types for encoding and decoding
 // Document instances. This function is called before any serialization or deserialization operations
-// to ensure that the gob encoder and decoder can properly handle the custom types used in the Document struct.
+// to ensure the gob encoder and decoder handle the custom expression types in
+// Document.
 func initGob() {
 	if !inited {
 		gob.Register(NumberExpr{})

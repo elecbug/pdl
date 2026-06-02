@@ -7,13 +7,13 @@ import (
 )
 
 // next advances the parser to the next token. It updates the current token (cur) to the peek token and
-// then fetches the next token from the lexer to update the peek token. This allows the parser to look ahead one token while parsing.
+// then fetches a new peek token from the lexer.
 func (p *Parser) next() {
 	p.cur = p.peek
 	p.peek = p.l.NextToken()
 }
 
-// expect checks if the current token matches the expected token type. If it does, it advances to the next token.
+// expect verifies the current token type and advances on success.
 func (p *Parser) expect(t token.TokenType) error {
 	if p.cur.Type != t {
 		return p.errf("expected %s, got %s %q", t, p.cur.Type, p.cur.Lit)

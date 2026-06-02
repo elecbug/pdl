@@ -3,8 +3,8 @@ set mode BIG_ENDIAN MSB_FIRST
 
 def {
     # Fixed header: 20 bytes
-    src_port       from 0   length 16    # You can use other forms like `from 0  to 15` or `from  0:15` or `from 0;16`
-    dst_port       from 16  length 16    #                              `from 16 to 31` or `from 16:31` or `from 0;16`
+    src_port       from 0   length 16
+    dst_port       from 16  length 16
     
     seq            from 32  length 32
     ack            from 64  length 32

@@ -1,6 +1,6 @@
 package order
 
-// ByteOrder represents the byte order (endianness) used in the document, which can be either BIG_ENDIAN or LITTLE_ENDIAN.
+// ByteOrder represents the byte order (endianness) used in the document.
 type ByteOrder string
 
 const (
@@ -10,7 +10,7 @@ const (
 	LITTLE_ENDIAN ByteOrder = "LITTLE_ENDIAN"
 )
 
-// BitOrder represents the bit order used in the document, which can be either MSB_FIRST or LSB_FIRST.
+// BitOrder represents the bit order used in the document.
 type BitOrder string
 
 const (

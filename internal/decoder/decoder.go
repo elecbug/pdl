@@ -17,7 +17,8 @@ type Value struct {
 	Len int64
 	// The unsigned integer value of the decoded field, derived from the raw bits.
 	UInt uint64
-	// The mode of the decoded field, such as "hex", "dec", "bin", or "bool", which can be used for formatting the value.
+	// The output format mode for the decoded field, such as "hex", "dec",
+	// "bin", or "bool".
 	Mode string
 }
 

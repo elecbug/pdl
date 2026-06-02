@@ -48,8 +48,10 @@ func parseJSONPath(path string) ([]pathPart, error) {
 	return parts, nil
 }
 
-// parsePathPart takes a raw string representing a single part of a JSON path and parses it into a pathPart struct.
-// It supports both object keys (e.g., "key") and array indices (e.g., "[0]" or "key[0]"). It returns an error if the part is invalid or contains unsupported syntax.
+// parsePathPart parses one segment of a JSON path into a pathPart.
+//
+// Supported forms are object keys (for example, "key") and array indices
+// (for example, "[0]" or "key[0]").
 func parsePathPart(raw string) (pathPart, error) {
 	// [0]
 	if strings.HasPrefix(raw, "[") {
@@ -97,8 +99,10 @@ func parsePathPart(raw string) (pathPart, error) {
 	return pathPart{Key: raw}, nil
 }
 
-// setJSONPath sets the value at the specified JSON path in the root object. It creates intermediate objects or arrays as needed.
-// It returns an error if there is a conflict in the path (e.g., trying to set a value where an object already exists).
+// setJSONPath sets a value at the given JSON path in root.
+//
+// Intermediate objects or arrays are created as needed. An error is returned
+// when the path conflicts with an existing non-object or non-array value.
 func setJSONPath(root *map[string]any, path string, value any) error {
 	parts, err := parseJSONPath(path)
 	if err != nil {
@@ -178,9 +182,7 @@ func setJSONPath(root *map[string]any, path string, value any) error {
 	return nil
 }
 
-// ensureArrayLen takes an array and a desired length n, and returns a new array that has at least n elements.
-// If the original array is shorter than n, it appends nil values until the length is n. If the original array
-// is already n or longer, it returns the original array unchanged.
+// ensureArrayLen grows arr with nil elements until len(arr) >= n.
 func ensureArrayLen(arr []any, n int) []any {
 	for len(arr) < n {
 		arr = append(arr, nil)
