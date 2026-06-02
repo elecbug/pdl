@@ -89,7 +89,7 @@ out json {
 }
 `
 
-func TestBuildJSONTCP(t *testing.T) {
+func TestBuildJSON(t *testing.T) {
 	doc, err := parser.ParseString(tcpPDL)
 	if err != nil {
 		t.Fatalf("ParseString failed: %v", err)
