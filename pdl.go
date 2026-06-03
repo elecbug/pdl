@@ -1,32 +1,36 @@
 package pdl
 
 import (
+	"fmt"
+
 	"github.com/elecbug/pdl/internal/decoder"
 	"github.com/elecbug/pdl/internal/document"
 	"github.com/elecbug/pdl/internal/extractor/json_out"
 	"github.com/elecbug/pdl/internal/parser"
 )
 
-type Document document.Document
+type Document document.DocumentSet
 
-func GenerateDocument(src string) (*Document, error) {
-	doc, err := parser.ParseString(src)
+func GenerateDocument(root string, srcs ...string) (*Document, error) {
+	doc, err := parser.ParseWithMultiSources(root, srcs...)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to parse document: %w", err)
 	}
+
 	return (*Document)(doc), nil
 }
 
-func ExtractJSON(d *Document, packet []byte) (any, error) {
-	result, err := decoder.Decode((*document.Document)(d), packet)
+func ExtractJSON(doc *Document, packet []byte) (any, error) {
+	root := (*document.DocumentSet)(doc).Root
+	result, err := decoder.Decode(root, packet)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to decode document: %w", err)
 	}
 
-	jsonResult, err := json_out.BuildJSON((*document.Document)(d), result)
+	jsonRes, err := json_out.BuildJSONWithSet((*document.DocumentSet)(doc), doc.Root, result)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to build JSON with set: %w", err)
 	}
 
-	return jsonResult, nil
+	return jsonRes, nil
 }

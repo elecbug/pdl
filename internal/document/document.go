@@ -26,6 +26,16 @@ type Document struct {
 	Outs []Out
 }
 
+// DocumentSet represents a collection of documents, allowing for multiple packet definitions and a
+// designated root document for decoding.
+type DocumentSet struct {
+	// A map of document names to their corresponding Document structures, enabling the organization
+	Documents map[string]*Document
+	// A reference to the root document that should be used for decoding input data,
+	// which must be one of the documents in the Documents map.
+	Root *Document
+}
+
 // Var represents a variable defined in the document, consisting of a name and an associated expression
 type Var struct {
 	// The name of the variable, which can be used in expressions within the document.
@@ -69,4 +79,7 @@ type Out struct {
 	// Map is an optional mapping of decoded values to their corresponding string representations
 	// which can be used for formatting the output.
 	Map map[string]string
+
+	// AsPacket is an optional field that, if set, indicates that the output should be treated as a nested packet
+	AsPacket string
 }

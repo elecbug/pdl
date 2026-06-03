@@ -1,6 +1,7 @@
 package parser
 
 import (
+	"fmt"
 	"strconv"
 	"strings"
 
@@ -36,6 +37,37 @@ func New(input string) *Parser {
 // ParseString parses input into a Document.
 func ParseString(input string) (*document.Document, error) {
 	return New(input).Parse()
+}
+
+// ParseWithMultiSources parses multiple input strings into a DocumentSet, ensuring that each document has a
+// unique packet name and that the first document is set as the root for decoding.
+func ParseWithMultiSources(root string, inputs ...string) (*document.DocumentSet, error) {
+	set := &document.DocumentSet{
+		Documents: make(map[string]*document.Document),
+	}
+
+	for i, input := range inputs {
+		doc, err := ParseString(input)
+		if err != nil {
+			return nil, fmt.Errorf("parse input[%d]: %w", i, err)
+		}
+
+		if doc.PacketName == "" {
+			return nil, fmt.Errorf("parse input[%d]: packet name is empty", i)
+		}
+
+		if _, exists := set.Documents[doc.PacketName]; exists {
+			return nil, fmt.Errorf("duplicate packet %q", doc.PacketName)
+		}
+
+		set.Documents[doc.PacketName] = doc
+
+		if set.Root == nil && doc.PacketName == root {
+			set.Root = doc
+		}
+	}
+
+	return set, nil
 }
 
 // Parse processes the token stream and constructs a Document structure based on the PDL source code.
@@ -336,9 +368,9 @@ func (p *Parser) parseOutLine() (document.Out, error) {
 			return document.Out{}, p.errf("invalid bit index %q", p.cur.Lit)
 		}
 
-		idx := int(v)
 		out.HasBitIndex = true
-		out.BitIndex = idx
+		out.BitIndex = int(v)
+
 		p.next()
 
 		if err := p.expect(token.RANGLE_SIGN); err != nil {
@@ -353,26 +385,35 @@ func (p *Parser) parseOutLine() (document.Out, error) {
 	out.Path = p.cur.Lit
 	p.next()
 
-	// Normal output:
-	// src_port source_port DEC
+	if p.cur.Type == token.AS_KEYWORD {
+		p.next()
+
+		if p.cur.Type != token.IDENT {
+			return document.Out{}, p.errf("expected packet name after as")
+		}
+
+		out.AsPacket = p.cur.Lit
+		p.next()
+		return out, nil
+	}
+
 	if p.cur.Type == token.IDENT {
 		out.Format = p.cur.Lit
 		p.next()
 		return out, nil
 	}
 
-	// Bracket output:
-	// flags<6> syn { 0 : false 1 : true }
 	if p.cur.Type == token.LBRACE_SIGN {
 		m, err := p.parseMapBlock()
 		if err != nil {
 			return document.Out{}, err
 		}
+
 		out.Map = m
 		return out, nil
 	}
 
-	return document.Out{}, p.errf("expected format or map block in out line, got %s %q", p.cur.Type, p.cur.Lit)
+	return document.Out{}, p.errf("expected format, as packet, or map block in out line, got %s %q", p.cur.Type, p.cur.Lit)
 }
 
 // parseMapBlock parses a brace-enclosed key-value mapping.

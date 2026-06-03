@@ -15,7 +15,7 @@ func main() {
 		log.Fatalf("usage: %s <hex_string>", os.Args[0])
 	}
 
-	doc, err := pdl.GenerateDocument(standard.IP4_PDL)
+	doc, err := pdl.GenerateDocument(standard.IPv4, standard.TCP_PDL("HEX"), standard.IP4_PDL("as "+standard.TCP))
 	if err != nil {
 		log.Fatalf("failed to parse PDL file: %v", err)
 	}

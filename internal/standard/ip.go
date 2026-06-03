@@ -1,7 +1,10 @@
 package standard
 
-const IP4_PDL = `
-packet IPv4
+const IPv4 = "IPv4"
+
+func IP4_PDL(payload string) string {
+	return `
+packet ` + IPv4 + `
 
 set mode BIG_ENDIAN MSB_FIRST
 
@@ -57,7 +60,7 @@ out json {
     dst_ip          destination_ip       IP4
 
     options         options              HEX
-    payload         payload              HEX
+    payload         payload              ` + payload + `
 
     flags<0> flag.reserved {
         0 : false
@@ -75,3 +78,4 @@ out json {
     }
 }
 `
+}

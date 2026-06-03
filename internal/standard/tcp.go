@@ -1,7 +1,10 @@
 package standard
 
-const TCP_PDL = `
-packet TCP
+const TCP = "TCP"
+
+func TCP_PDL(payload string) string {
+	return `
+packet ` + TCP + `
 set mode BIG_ENDIAN MSB_FIRST
 
 def {
@@ -42,7 +45,7 @@ out json {
     urgent_pointer urgent_pointer        DEC
 
     options        options               HEX
-    payload        payload               HEX
+    payload        payload               ` + payload + `
 
     # In BIG_ENDIAN mode, flags<0> is MSB and flags<7> is LSB.
     flags<0> flag.cwr {
@@ -86,3 +89,4 @@ out json {
     }
 }
 `
+}

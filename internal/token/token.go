@@ -20,6 +20,7 @@ const (
 	TO_KEYWORD     TokenType = "to"
 	LENGTH_KEYWORD TokenType = "length"
 	END_KEYWORD    TokenType = "end"
+	AS_KEYWORD     TokenType = "as"
 
 	EQUAL_SIGN  TokenType = "="
 	LBRACE_SIGN TokenType = "{"
@@ -62,6 +63,7 @@ var keywords = map[string]TokenType{
 	"to":     TO_KEYWORD,
 	"length": LENGTH_KEYWORD,
 	"end":    END_KEYWORD,
+	"as":     AS_KEYWORD,
 }
 
 // LookupIdent returns a keyword token type when s is reserved; otherwise it
