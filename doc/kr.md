@@ -217,6 +217,11 @@ out json {
 | HEX    | Hexadecimal String |
 | BIN    | Binary String      |
 | BOOL   | Boolean            |
+| ASCII  | Pure Alphabet      |
+| UTF8   | UTF8 Unicode       |
+| IP4    | IP Version 4(L3)   |
+| IP6    | IP Version 6(L3)   |
+| MAC    | MAC Address(L2)    |
 
 예시:
 
@@ -353,14 +358,9 @@ out json {
 * if / else
 * struct
 * array
-* ASCII
-* UTF8
 * UTF16
 * BASE64
 * BASE58
-* IP4
-* IP6
-* MAC
 * Go Generator
 * Rust Generator
 * C# Generator

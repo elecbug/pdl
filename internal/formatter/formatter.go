@@ -3,6 +3,7 @@ package formatter
 import (
 	"encoding/hex"
 	"fmt"
+	"net"
 	"strings"
 
 	"github.com/elecbug/pdl/internal/decoder"
@@ -31,6 +32,16 @@ func FormatValue(v decoder.Value, format string) (any, error) {
 		}
 		return v.UInt != 0, nil
 
+	case "ASCII":
+		return formatASCII(v)
+	case "UTF8":
+		return formatUTF8(v)
+	case "IP4":
+		return formatIP4(v)
+	case "IP6":
+		return formatIP6(v)
+	case "MAC":
+		return formatMAC(v)
 	default:
 		return nil, fmt.Errorf("unknown format %q", format)
 	}
@@ -67,4 +78,69 @@ func ConvertMappedValue(s string) any {
 	default:
 		return s
 	}
+}
+
+// formatASCII converts a decoded value to its ASCII string representation. It checks that the value is byte-aligned
+// and returns an error if it is not. The function uses the BitsToBytes helper to convert the bit slice to a byte slice
+// before converting it to a string.
+func formatASCII(v decoder.Value) (string, error) {
+	if v.Len%8 != 0 {
+		return "", fmt.Errorf("ASCII requires byte-aligned data")
+	}
+
+	return string(v.Bits), nil
+}
+
+// formatUTF8 converts a decoded value to its UTF-8 string representation. Similar to formatASCII, it checks that the
+// value is byte-aligned
+func formatUTF8(v decoder.Value) (string, error) {
+	if v.Len%8 != 0 {
+		return "", fmt.Errorf("UTF8 requires byte-aligned data")
+	}
+
+	return string(v.Bits), nil
+}
+
+// formatIP4 converts a decoded value to its IPv4 string representation. It checks that the value is exactly 32 bits long
+// and returns an error if it is not. The function uses the BitsToBytes helper to convert the bit slice to a byte slice
+// before constructing the net.IP object and returning its string representation.
+func formatIP4(v decoder.Value) (string, error) {
+	if v.Len != 32 {
+		return "", fmt.Errorf("IP4 requires 32 bits")
+	}
+
+	return net.IPv4(
+		v.Bits[0],
+		v.Bits[1],
+		v.Bits[2],
+		v.Bits[3],
+	).String(), nil
+}
+
+// formatIP6 converts a decoded value to its IPv6 string representation. It checks that the value is exactly 128 bits long
+// and returns an error if it is not. The function uses the BitsToBytes helper to convert the bit slice to a byte slice
+// before constructing the net.IP object and returning its string representation.
+func formatIP6(v decoder.Value) (string, error) {
+	if v.Len != 128 {
+		return "", fmt.Errorf("IP6 requires 128 bits")
+	}
+
+	ip := net.IP(v.Bits)
+
+	return ip.String(), nil
+}
+
+// formatMAC converts a decoded value to its MAC address string representation. It checks that the value is exactly 48 bits long
+// and returns an error if it is not. The function uses the BitsToBytes helper to convert the bit slice to a byte slice
+// before formatting it as a MAC address string.
+func formatMAC(v decoder.Value) (string, error) {
+	if v.Len != 48 {
+		return "", fmt.Errorf("MAC requires 48 bits")
+	}
+
+	return fmt.Sprintf(
+		"%02X:%02X:%02X:%02X:%02X:%02X",
+		v.Bits[0], v.Bits[1], v.Bits[2],
+		v.Bits[3], v.Bits[4], v.Bits[5],
+	), nil
 }

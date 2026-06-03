@@ -1,68 +1,42 @@
 package main
 
 import (
+	"encoding/hex"
 	"encoding/json"
 	"log"
 	"os"
-	"time"
 
 	"github.com/elecbug/pdl"
+	"github.com/elecbug/pdl/internal/standard"
 )
 
 func main() {
-	var now time.Time
+	if len(os.Args) < 2 {
+		log.Fatalf("usage: %s <hex_string>", os.Args[0])
+	}
 
-	srcFile := "doc/eg_tcp.pdl"
-
-	now = time.Now()
-	src, err := os.ReadFile(srcFile)
+	doc, err := pdl.GenerateDocument(standard.IP4_PDL)
 	if err != nil {
-		log.Fatalf("failed to read file %s: %v", srcFile, err)
+		log.Fatalf("failed to parse PDL file: %v", err)
 	}
-	log.Printf("Reading file: %v", time.Since(now))
 
-	now = time.Now()
-	doc, err := pdl.GenerateDocument(string(src))
+	packet, err := hex.DecodeString(os.Args[1])
 	if err != nil {
-		log.Fatalf("failed to parse PDL file %s: %v", srcFile, err)
-	}
-	log.Printf("Parsing: %v", time.Since(now))
-
-	packet := []byte{
-		0x00, 0x50, // src_port = 80
-		0x01, 0xbb, // dst_port = 443
-
-		0x00, 0x00, 0x00, 0x01, // seq = 1
-		0x00, 0x00, 0x00, 0x00, // ack = 0
-
-		0x50, // data_offset=5, reserved=0, ns=0
-		0x02, // flags=SYN
-
-		0x20, 0x00, // window = 8192
-		0xab, 0xcd, // checksum
-		0x00, 0x00, // urgent pointer
-
-		0xde, 0xad, 0xbe, 0xef, // payload
+		log.Fatalf("failed to decode hex string: %v", err)
 	}
 
-	now = time.Now()
 	result, err := pdl.ExtractJSON(doc, packet)
 	if err != nil {
 		log.Fatalf("failed to extract JSON: %v", err)
 	}
-	log.Printf("Decoding: %v", time.Since(now))
 
-	now = time.Now()
 	jsonData, err := json.MarshalIndent(result, "", "    ")
 	if err != nil {
 		log.Fatalf("failed to marshal JSON: %v", err)
 	}
-	log.Printf("Marshaling JSON: %v", time.Since(now))
 
-	now = time.Now()
-	err = os.WriteFile("tmp/log", jsonData, 0644)
+	err = os.WriteFile("tmp/tcp_log", jsonData, 0644)
 	if err != nil {
 		log.Fatalf("failed to write JSON file: %v", err)
 	}
-	log.Printf("Writing JSON file: %v", time.Since(now))
 }
