@@ -2,7 +2,7 @@ package standard
 
 import "github.com/elecbug/pdl"
 
-func TCP_PDL(payload pdl.PacketType) pdl.PDLSource {
+func TCPPDL(payload pdl.Payload) pdl.PDLSource {
 	return pdl.PDLSource(`
 packet ` + TCP.String() + `
 set mode BIG_ENDIAN MSB_FIRST

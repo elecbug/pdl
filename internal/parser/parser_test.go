@@ -8,7 +8,7 @@ import (
 )
 
 func TestParseForTCP(t *testing.T) {
-	doc, err := parser.ParseString(string(standard.TCP_PDL("HEX")))
+	doc, err := parser.ParseString(string(standard.TCPPDL("HEX")))
 	if err != nil {
 		t.Fatalf("ParseString failed: %v", err)
 	}

@@ -2,7 +2,7 @@ package standard
 
 import "github.com/elecbug/pdl"
 
-func IPv4_PDL(payload pdl.PacketType) pdl.PDLSource {
+func IPv4PDL(payload pdl.Payload) pdl.PDLSource {
 	return pdl.PDLSource(`
 packet ` + IPv4.String() + `
 

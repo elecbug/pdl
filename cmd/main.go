@@ -15,11 +15,11 @@ func main() {
 		log.Fatalf("usage: %s <hex_string>", os.Args[0])
 	}
 
-	pdl, err := pdl.Generate(
+	scheme, err := pdl.Generate(
 		standard.Ethernet,
-		standard.Ethernet_PDL(standard.IPv4.WithAs()),
-		standard.IPv4_PDL(standard.TCP.WithAs()),
-		standard.TCP_PDL("HEX"),
+		standard.EthernetPDL(standard.IPv4.AsPayload()),
+		standard.IPv4PDL(standard.TCP.AsPayload()),
+		standard.TCPPDL(standard.HexFormat),
 	)
 	if err != nil {
 		log.Fatalf("failed to parse PDL file: %v", err)
@@ -30,7 +30,7 @@ func main() {
 		log.Fatalf("failed to decode hex string: %v", err)
 	}
 
-	result, err := pdl.ExtractJSON(packet)
+	result, err := scheme.ExtractJSON(packet)
 	if err != nil {
 		log.Fatalf("failed to extract JSON: %v", err)
 	}
@@ -40,7 +40,7 @@ func main() {
 		log.Fatalf("failed to marshal JSON: %v", err)
 	}
 
-	err = os.WriteFile("tmp/tcp_log", jsonData, 0644)
+	err = os.WriteFile("tmp/log", jsonData, 0644)
 	if err != nil {
 		log.Fatalf("failed to write JSON file: %v", err)
 	}

@@ -2,7 +2,7 @@ package standard
 
 import "github.com/elecbug/pdl"
 
-func Ethernet_PDL(payload pdl.PacketType) pdl.PDLSource {
+func EthernetPDL(payload pdl.Payload) pdl.PDLSource {
 	return pdl.PDLSource(`
 packet ` + Ethernet.String() + `
 

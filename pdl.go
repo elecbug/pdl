@@ -9,8 +9,11 @@ import (
 	"github.com/elecbug/pdl/internal/parser"
 )
 
-// PDL represents a parsed PDL document set, which contains one or more packet definitions and their associated decoding rules.
-type PDL document.DocumentSet
+// PDL represents a parsed document set that defines how to decode packets and extract JSON output based on the defined packet types and payloads.
+// It embeds the DocumentSet structure, allowing it to hold multiple documents and a designated root document for decoding.
+type PDL struct {
+	set *document.DocumentSet
+}
 
 // PDLSource is a type alias for string, representing the source of a PDLSource document, which can be used to generate a Document structure.
 type PDLSource string
@@ -28,20 +31,20 @@ func Generate(main PacketType, sources ...PDLSource) (*PDL, error) {
 		return nil, fmt.Errorf("failed to parse document: %w", err)
 	}
 
-	return (*PDL)(doc), nil
+	return &PDL{set: doc}, nil
 }
 
 // ExtractJSON takes a byte slice representing a packet, decodes it according to the PDL document's rules,
 // and constructs a JSON-compatible Go value based on the document's output configuration. It returns the
 // resulting JSON value or an error if decoding or JSON construction fails.
 func (doc *PDL) ExtractJSON(packet []byte) (any, error) {
-	root := (*document.DocumentSet)(doc).Root
+	root := doc.set.Root
 	result, err := decoder.Decode(root, packet)
 	if err != nil {
 		return nil, fmt.Errorf("failed to decode document: %w", err)
 	}
 
-	jsonRes, err := json_out.BuildJSONWithSet((*document.DocumentSet)(doc), doc.Root, result)
+	jsonRes, err := json_out.BuildJSONWithSet(doc.set, root, result)
 	if err != nil {
 		return nil, fmt.Errorf("failed to build JSON with set: %w", err)
 	}
@@ -49,16 +52,24 @@ func (doc *PDL) ExtractJSON(packet []byte) (any, error) {
 	return jsonRes, nil
 }
 
-// PacketType is a type alias for string, representing the name of the main packet type defined in the PDL document.
+// Payload is a type alias for string, representing the name of the main packet type defined in the PDL document.
+type Payload string
+
+// String returns the string representation of the Payload, which is simply the underlying string value.
+func (p Payload) String() string {
+	return string(p)
+}
+
+// PacketType is a type alias for string, representing the name of a packet type that can be used in PDL source definitions and document generation.
 type PacketType string
 
-// WithAs returns a new PacketType that represents the current packet type with an "as " prefix, which can be used in PDL
-// source definitions to indicate that this packet type should be treated as an alias for another packet type during decoding.
-func (pt PacketType) WithAs() PacketType {
-	return "as " + pt
+// AsPayload returns a Payload that represents the packet type as a payload, which can be used in PDL source
+// definitions to specify the main packet type for decoding.
+func (p PacketType) AsPayload() Payload {
+	return Payload("as " + p.String())
 }
 
 // String returns the string representation of the PacketType, which is simply the underlying string value.
-func (pt PacketType) String() string {
-	return string(pt)
+func (p PacketType) String() string {
+	return string(p)
 }
