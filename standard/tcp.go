@@ -1,10 +1,10 @@
 package standard
 
-const TCP = "TCP"
+import "github.com/elecbug/pdl"
 
-func TCP_PDL(payload string) string {
-	return `
-packet ` + TCP + `
+func TCP_PDL(payload pdl.PacketType) pdl.PDLSource {
+	return pdl.PDLSource(`
+packet ` + TCP.String() + `
 set mode BIG_ENDIAN MSB_FIRST
 
 def {
@@ -45,7 +45,7 @@ out json {
     urgent_pointer urgent_pointer        DEC
 
     options        options               HEX
-    payload        payload               ` + payload + `
+    payload        payload               ` + payload.String() + `
 
     # In BIG_ENDIAN mode, flags<0> is MSB and flags<7> is LSB.
     flags<0> flag.cwr {
@@ -88,5 +88,5 @@ out json {
         1 : true
     }
 }
-`
+`)
 }

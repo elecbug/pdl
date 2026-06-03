@@ -7,7 +7,7 @@ import (
 	"os"
 
 	"github.com/elecbug/pdl"
-	"github.com/elecbug/pdl/internal/standard"
+	"github.com/elecbug/pdl/standard"
 )
 
 func main() {
@@ -15,7 +15,12 @@ func main() {
 		log.Fatalf("usage: %s <hex_string>", os.Args[0])
 	}
 
-	doc, err := pdl.GenerateDocument(standard.IPv4, standard.TCP_PDL("HEX"), standard.IP4_PDL("as "+standard.TCP))
+	pdl, err := pdl.Generate(
+		standard.Ethernet,
+		standard.Ethernet_PDL(standard.IPv4.WithAs()),
+		standard.IPv4_PDL(standard.TCP.WithAs()),
+		standard.TCP_PDL("HEX"),
+	)
 	if err != nil {
 		log.Fatalf("failed to parse PDL file: %v", err)
 	}
@@ -25,7 +30,7 @@ func main() {
 		log.Fatalf("failed to decode hex string: %v", err)
 	}
 
-	result, err := pdl.ExtractJSON(doc, packet)
+	result, err := pdl.ExtractJSON(packet)
 	if err != nil {
 		log.Fatalf("failed to extract JSON: %v", err)
 	}

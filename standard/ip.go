@@ -1,10 +1,10 @@
 package standard
 
-const IPv4 = "IPv4"
+import "github.com/elecbug/pdl"
 
-func IP4_PDL(payload string) string {
-	return `
-packet ` + IPv4 + `
+func IPv4_PDL(payload pdl.PacketType) pdl.PDLSource {
+	return pdl.PDLSource(`
+packet ` + IPv4.String() + `
 
 set mode BIG_ENDIAN MSB_FIRST
 
@@ -60,7 +60,7 @@ out json {
     dst_ip          destination_ip       IP4
 
     options         options              HEX
-    payload         payload              ` + payload + `
+    payload         payload              ` + string(payload) + `
 
     flags<0> flag.reserved {
         0 : false
@@ -77,5 +77,5 @@ out json {
         1 : true
     }
 }
-`
+`)
 }
