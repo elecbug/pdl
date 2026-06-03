@@ -293,6 +293,26 @@ out json {
 }
 ```
 
+### Type Mapping
+
+다른 PDL을 바탕으로 출력형을 정의할 수 있다.
+
+```pdl
+out json {
+    payload as TCP
+}
+```
+
+결과:
+
+```json
+{
+    "payload": {
+        // JSON of TCP format
+    }
+}
+```
+
 ---
 
 ### Example
@@ -349,12 +369,12 @@ out json {
 * JSON Path
 * flags<n>
 * Value Mapping
+* as
 
 ---
 
 ## 향후 확장 예정
 
-* include
 * if / else
 * struct
 * array
