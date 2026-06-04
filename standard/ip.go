@@ -2,8 +2,8 @@ package standard
 
 import "github.com/elecbug/pdl"
 
-func IPv4PDL(payload pdl.Payload) pdl.PDLSource {
-	return pdl.PDLSource(`
+func IPv4PDL(payload pdl.Payload) pdl.Source {
+	return pdl.Source(`
 packet ` + IPv4.String() + `
 
 set mode BIG_ENDIAN MSB_FIRST

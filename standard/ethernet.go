@@ -2,8 +2,8 @@ package standard
 
 import "github.com/elecbug/pdl"
 
-func EthernetPDL(payload pdl.Payload) pdl.PDLSource {
-	return pdl.PDLSource(`
+func EthernetPDL(payload pdl.Payload) pdl.Source {
+	return pdl.Source(`
 packet ` + Ethernet.String() + `
 
 set mode BIG_ENDIAN MSB_FIRST

@@ -41,19 +41,19 @@ func ParseString(input string) (*document.Document, error) {
 
 // ParseWithMultiSources parses multiple input strings into a DocumentSet, ensuring that each document has a
 // unique packet name and that the first document is set as the root for decoding.
-func ParseWithMultiSources(root string, inputs ...string) (*document.DocumentSet, error) {
+func ParseWithMultiSources(root string, sources ...string) (*document.DocumentSet, error) {
 	set := &document.DocumentSet{
 		Documents: make(map[string]*document.Document),
 	}
 
-	for i, input := range inputs {
+	for _, input := range sources {
 		doc, err := ParseString(input)
 		if err != nil {
-			return nil, fmt.Errorf("parse input[%d]: %w", i, err)
+			return nil, err
 		}
 
 		if doc.PacketName == "" {
-			return nil, fmt.Errorf("parse input[%d]: packet name is empty", i)
+			return nil, fmt.Errorf("packet name is empty: %q", summaryText(input))
 		}
 
 		if _, exists := set.Documents[doc.PacketName]; exists {
@@ -65,6 +65,10 @@ func ParseWithMultiSources(root string, inputs ...string) (*document.DocumentSet
 		if set.Root == nil && doc.PacketName == root {
 			set.Root = doc
 		}
+	}
+
+	if set.Root == nil {
+		return nil, fmt.Errorf("root packet %q not found", root)
 	}
 
 	return set, nil
@@ -114,6 +118,26 @@ func (p *Parser) Parse() (*document.Document, error) {
 	}
 
 	return doc, nil
+}
+
+func summaryText(input string) string {
+	result := ""
+	count := 0
+	lines := strings.Split(input, "\n")
+
+	for _, l := range lines {
+		words := strings.Fields(l)
+		for _, w := range words {
+			if count > 10 {
+				return result + "..."
+			}
+
+			result += w + " "
+			count++
+		}
+	}
+
+	return result + "..."
 }
 
 // parsePacket parses the packet definition section of the document, expecting the "packet" keyword

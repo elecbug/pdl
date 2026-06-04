@@ -26,5 +26,5 @@ func (p *Parser) expect(t token.TokenType) error {
 // provide detailed error messages when the parser encounters unexpected tokens or syntax errors.
 func (p *Parser) errf(format string, args ...any) error {
 	msg := fmt.Sprintf(format, args...)
-	return fmt.Errorf("parse error at %d:%d: %s", p.cur.Line, p.cur.Col, msg)
+	return fmt.Errorf("[Line %d, Column %d] %s", p.cur.Line, p.cur.Col, msg)
 }

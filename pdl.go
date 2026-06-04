@@ -1,8 +1,6 @@
 package pdl
 
 import (
-	"fmt"
-
 	"github.com/elecbug/pdl/internal/decoder"
 	"github.com/elecbug/pdl/internal/document"
 	"github.com/elecbug/pdl/internal/extractor/json_out"
@@ -15,20 +13,25 @@ type PDL struct {
 	set *document.DocumentSet
 }
 
-// PDLSource is a type alias for string, representing the source of a PDLSource document, which can be used to generate a Document structure.
-type PDLSource string
+// Source is a type alias for string, representing the source of a Source document, which can be used to generate a Document structure.
+type Source string
 
-// Generate takes a main PacketType and one or more PDLSource strings, parses them into a structured DocumentSet,
+// String returns the string representation of the Source, which is simply the underlying string value.
+func (s Source) String() string {
+	return string(s)
+}
+
+// Generate takes a main PacketType and one or more Source strings, parses them into a structured DocumentSet,
 // and returns a pointer to a PDL representing the parsed document set. It returns an error if parsing fails.
-func Generate(main PacketType, sources ...PDLSource) (*PDL, error) {
-	var strSrcs []string
+func Generate(main PacketType, sources ...Source) (*PDL, error) {
+	var strs []string
 	for _, src := range sources {
-		strSrcs = append(strSrcs, string(src))
+		strs = append(strs, src.String())
 	}
 
-	doc, err := parser.ParseWithMultiSources(main.String(), strSrcs...)
+	doc, err := parser.ParseWithMultiSources(main.String(), strs...)
 	if err != nil {
-		return nil, fmt.Errorf("failed to parse document: %w", err)
+		return nil, err
 	}
 
 	return &PDL{set: doc}, nil
@@ -37,16 +40,16 @@ func Generate(main PacketType, sources ...PDLSource) (*PDL, error) {
 // ExtractJSON takes a byte slice representing a packet, decodes it according to the PDL document's rules,
 // and constructs a JSON-compatible Go value based on the document's output configuration. It returns the
 // resulting JSON value or an error if decoding or JSON construction fails.
-func (doc *PDL) ExtractJSON(packet []byte) (any, error) {
-	root := doc.set.Root
+func (p *PDL) ExtractJSON(packet []byte) (any, error) {
+	root := p.set.Root
 	result, err := decoder.Decode(root, packet)
 	if err != nil {
-		return nil, fmt.Errorf("failed to decode document: %w", err)
+		return nil, err
 	}
 
-	jsonRes, err := json_out.BuildJSONWithSet(doc.set, root, result)
+	jsonRes, err := json_out.BuildJSONWithSet(p.set, root, result)
 	if err != nil {
-		return nil, fmt.Errorf("failed to build JSON with set: %w", err)
+		return nil, err
 	}
 
 	return jsonRes, nil
