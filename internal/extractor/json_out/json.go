@@ -85,12 +85,12 @@ func BuildJSONWithSet(set *document.DocumentSet, doc *document.Document, result 
 
 			childResult, err := decoder.Decode(childDoc, value.Bits)
 			if err != nil {
-				return nil, fmt.Errorf("decode nested packet %q: %w", rule.AsPacket, err)
+				return nil, fmt.Errorf("%w in %q", err, rule.AsPacket)
 			}
 
 			childJSON, err := BuildJSONWithSet(set, childDoc, childResult)
 			if err != nil {
-				return nil, fmt.Errorf("build nested json %q: %w", rule.AsPacket, err)
+				return nil, fmt.Errorf("%w in %q", err, rule.AsPacket)
 			}
 
 			outValue = childJSON
