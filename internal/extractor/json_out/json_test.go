@@ -90,7 +90,7 @@ out json {
 `
 
 func TestBuildJSON(t *testing.T) {
-	doc, err := parser.ParseString(tcpPDL)
+	doc, err := parser.ParseWithMultiSources("TCP", tcpPDL)
 	if err != nil {
 		t.Fatalf("ParseString failed: %v", err)
 	}
@@ -108,12 +108,12 @@ func TestBuildJSON(t *testing.T) {
 		0xde, 0xad, 0xbe, 0xef,
 	}
 
-	result, err := decoder.Decode(doc, packet)
+	result, err := decoder.Decode(doc.Root, packet)
 	if err != nil {
 		t.Fatalf("Decode failed: %v", err)
 	}
 
-	obj, err := json_out.BuildJSON(doc, result)
+	obj, err := json_out.BuildJSONWithSet(doc, doc.Root, result)
 	if err != nil {
 		t.Fatalf("BuildJSON failed: %v", err)
 	}

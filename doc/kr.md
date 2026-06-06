@@ -67,7 +67,7 @@ packet TCP
 
 ---
 
-## Mode
+## Mode 정의
 
 PDL은 Byte Order와 Bit Order를 분리하여 정의한다.
 
@@ -161,15 +161,14 @@ def {
 
 ```pdl
 def {
-    data_offset from 96 length 4
-
-    options from 160 length (*data_offset * 32 - 160)
-
-    payload from (*data_offset * 32) to end
+    data_offset from 96                  length 4
+    options     from 160                 length (*data_offset * 32 - 160)
+    payload     from (*data_offset * 32) to     end
 }
 ```
 
-`*field_name` 문법은 필드의 정수값을 의미한다.
+포인터 문법은 각 패킷의 해당 필드에 대한 실제 정수값을 의미한다.
+즉, `*data_offset`은 변환하려는 패킷의 `data_offset`에 해당하는 4 bits 숫자 값이다.
 
 ---
 
@@ -188,6 +187,8 @@ out json {
 ### JSON Path
 
 중첩 구조를 생성할 수 있다.
+
+예시:
 
 ```pdl
 out json {
@@ -228,21 +229,6 @@ out json {
 ```pdl
 out json {
     checksum checksum HEX
-}
-```
-
----
-
-### Bit Extraction
-
-특정 비트를 추출할 수 있다.
-
-```pdl
-out json {
-    flags<6> flag.syn {
-        0 : false
-        1 : true
-    }
 }
 ```
 

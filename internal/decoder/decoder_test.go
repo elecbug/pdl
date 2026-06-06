@@ -37,7 +37,7 @@ out json {
 `
 
 func TestDecode(t *testing.T) {
-	doc, err := parser.ParseString(tcpPDL)
+	doc, err := parser.Parse(tcpPDL)
 	if err != nil {
 		t.Fatalf("ParseString failed: %v", err)
 	}

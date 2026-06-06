@@ -34,9 +34,9 @@ func New(input string) *Parser {
 	return p
 }
 
-// ParseString parses input into a Document.
-func ParseString(input string) (*document.Document, error) {
-	return New(input).Parse()
+// Parse parses input into a Document.
+func Parse(input string) (*document.Document, error) {
+	return New(input).parse()
 }
 
 // ParseWithMultiSources parses multiple input strings into a DocumentSet, ensuring that each document has a
@@ -47,7 +47,7 @@ func ParseWithMultiSources(root string, sources ...string) (*document.DocumentSe
 	}
 
 	for _, input := range sources {
-		doc, err := ParseString(input)
+		doc, err := Parse(input)
 		if err != nil {
 			return nil, err
 		}
@@ -74,11 +74,11 @@ func ParseWithMultiSources(root string, sources ...string) (*document.DocumentSe
 	return set, nil
 }
 
-// Parse processes the token stream and constructs a Document structure based on the PDL source code.
+// parse processes the token stream and constructs a Document structure based on the PDL source code.
 // It handles the various sections of the document, such as packet definition, mode settings, variable
 // definitions, field definitions, and output specifications. If it encounters any syntax errors or
 // unexpected tokens, it returns an error with a descriptive message.
-func (p *Parser) Parse() (*document.Document, error) {
+func (p *Parser) parse() (*document.Document, error) {
 	doc := &document.Document{}
 
 	for p.cur.Type != token.EOF {

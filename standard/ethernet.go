@@ -26,7 +26,7 @@ out json {
         0x0806 : "ARP"
     }
 
-    payload payload ` + payload.String() + `
+    payload ethernet.payload ` + payload.String() + `
 }
 `)
 }

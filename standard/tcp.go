@@ -24,66 +24,64 @@ def {
     checksum       from 128 length 16
     urgent_pointer from 144 length 16
     
-    # Variable area
-    options        from 160 length ((*data_offset * 32) - 160)
+    options        from 160 length (*data_offset * 32 - 160)
     payload        from (*data_offset * 32) to end
 }
 
 out json {
-    src_port       source_port           DEC
-    dst_port       destination_port      DEC
+    src_port       tcp.source_port           DEC
+    dst_port       tcp.destination_port      DEC
 
-    seq            sequence_number       DEC
-    ack            acknowledgment_number DEC
+    seq            tcp.sequence_number       DEC
+    ack            tcp.acknowledgment_number DEC
 
-    data_offset    header_length_words   DEC
-    reserved       reserved              BIN
-    ns             nonce_sum             BOOL
+    data_offset    tcp.header_length_words   DEC
+    reserved       tcp.reserved              BIN
+    ns             tcp.nonce_sum             BOOL
 
-    window         window_size           DEC
-    checksum       checksum              HEX
-    urgent_pointer urgent_pointer        DEC
+    window         tcp.window_size           DEC
+    checksum       tcp.checksum              HEX
+    urgent_pointer tcp.urgent_pointer        DEC
 
-    options        options               HEX
-    payload        payload               ` + payload.String() + `
+    options        tcp.options               HEX
+    payload        tcp.payload               ` + payload.String() + `
 
-    # In BIG_ENDIAN mode, flags<0> is MSB and flags<7> is LSB.
-    flags<0> flag.cwr {
+    flags<0> tcp.flag.cwr {
         0 : false
         1 : true
     }
 
-    flags<1> flag.ece {
+    flags<1> tcp.flag.ece {
         0 : false
         1 : true
     }
 
-    flags<2> flag.urg {
+    flags<2> tcp.flag.urg {
         0 : false
         1 : true
     }
 
-    flags<3> flag.ack {
+    flags<3> tcp.flag.ack {
         0 : false
         1 : true
     }
 
-    flags<4> flag.psh {
+    flags<4> tcp.flag.psh {
         0 : false
         1 : true
     }
 
-    flags<5> flag.rst {
+    flags<5> tcp.flag.rst {
         0 : false
         1 : true
     }
 
-    flags<6> flag.syn {
+    flags<6> tcp.flag.syn {
         0 : false
         1 : true
     }
 
-    flags<7> flag.fin {
+    flags<7> tcp.flag.fin {
         0 : false
         1 : true
     }

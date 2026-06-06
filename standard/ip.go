@@ -36,43 +36,43 @@ def {
 }
 
 out json {
-    version         version              DEC
-    ihl             header.length_words  DEC
-    dscp            dscp                 DEC
-    ecn             ecn                  DEC
+    version         ip.version              DEC
+    ihl             ip.header.length_words  DEC
+    dscp            ip.dscp                 DEC
+    ecn             ip.ecn                  DEC
 
-    total_length    total_length         DEC
-    identification  identification       HEX
+    total_length    ip.total_length         DEC
+    identification  ip.identification       HEX
 
-    fragment_offset fragment_offset      DEC
+    fragment_offset ip.fragment_offset      DEC
 
-    ttl             ttl                  DEC
+    ttl             ip.ttl                  DEC
 
-    protocol protocol {
+    protocol ip.protocol {
         1  : "ICMP"
         6  : "TCP"
         17 : "UDP"
     }
 
-    checksum        checksum             HEX
+    checksum        ip.checksum             HEX
 
-    src_ip          source_ip            IP4
-    dst_ip          destination_ip       IP4
+    src_ip          ip.source_ip            IP4
+    dst_ip          ip.destination_ip       IP4
 
-    options         options              HEX
-    payload         payload              ` + string(payload) + `
+    options         ip.options              HEX
+    payload         ip.payload              ` + string(payload) + `
 
-    flags<0> flag.reserved {
+    flags<0> ip.flag.reserved {
         0 : false
         1 : true
     }
 
-    flags<1> flag.dont_fragment {
+    flags<1> ip.flag.dont_fragment {
         0 : false
         1 : true
     }
 
-    flags<2> flag.more_fragments {
+    flags<2> ip.flag.more_fragments {
         0 : false
         1 : true
     }
