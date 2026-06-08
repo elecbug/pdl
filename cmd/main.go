@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/hex"
 	"encoding/json"
+	"fmt"
 	"log"
 	"os"
 
@@ -43,8 +44,5 @@ func main() {
 		log.Fatalf("failed to marshal JSON: %v", err)
 	}
 
-	err = os.WriteFile("tmp/log", jsonData, 0644)
-	if err != nil {
-		log.Fatalf("failed to write JSON file: %v", err)
-	}
+	fmt.Println(string(jsonData))
 }

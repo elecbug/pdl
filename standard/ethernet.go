@@ -28,10 +28,10 @@ out json {
     }
 
     payload ethernet.payload as switch *ether_type {
-        0x0800  : IPv4
-        0x86DD  : IPv6
-        0x0806  : ARP
-        default : HEX
+        0x0800  : ` + pdl.IPv4.String() + `
+        0x86DD  : ` + pdl.IPv6.String() + `
+        0x0806  : ` + pdl.ARP.String() + `
+        default : ` + pdl.HexFormat.String() + `
     }
 }
 `)

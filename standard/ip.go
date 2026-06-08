@@ -63,10 +63,10 @@ out json {
     options         ip.options              HEX
 
     payload ip.payload as switch *protocol {
-        1       : ICMP
-        6       : TCP
-        17      : UDP
-        default : HEX
+        1       : ` + pdl.ICMP.String() + `
+        6       : ` + pdl.TCP.String() + `
+        17      : ` + pdl.UDP.String() + `
+        default : ` + pdl.HexFormat.String() + `
     }
 
     flags<0> ip.flag.reserved {
@@ -142,11 +142,11 @@ out json {
     dst_ip         ip.destination_ip   IP6
 
     payload ip.payload as switch *next_header {
-        6       : TCP
-        17      : UDP
-        44      : IPv6Fragment
-        58      : ICMPv6
-        default : HEX
+        6       : ` + pdl.TCP.String() + `
+        17      : ` + pdl.UDP.String() + `
+        44      : ` + pdl.IPv6Fragment.String() + `
+        58      : ` + pdl.ICMPv6.String() + `
+        default : ` + pdl.HexFormat.String() + `
     }
 }
 `)
@@ -187,11 +187,11 @@ out json {
     identification    fragment.identification HEX
 
     payload fragment.payload as switch *next_header {
-        6       : TCP
-        17      : UDP
-        44      : IPv6Fragment
-        58      : ICMPv6
-        default : HEX
+        6       : ` + pdl.TCP.String() + `
+        17      : ` + pdl.UDP.String() + `
+        44      : ` + pdl.IPv6Fragment.String() + `
+        58      : ` + pdl.ICMPv6.String() + `
+        default : ` + pdl.HexFormat.String() + `
     }
 }
 `)
