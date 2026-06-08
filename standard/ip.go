@@ -137,3 +137,41 @@ out json {
 }
 `)
 }
+
+func ipv6FragmentPDL(payload pdl.PayloadFormat) pdl.Source {
+	return pdl.NewSource(`
+packet ` + pdl.IPv6Fragment.String() + `
+
+set mode BIG_ENDIAN MSB_FIRST
+
+def {
+    next_header       from 0  length 8
+    reserved_octet    from 8  length 8
+
+    fragment_offset   from 16 length 13
+    reserved_bits     from 29 length 2
+    more_fragments    from 31 length 1
+
+    identification    from 32 length 32
+
+    payload           from 64 to end
+}
+
+out json {
+    next_header fragment.next_header {
+        6  : "TCP"
+        17 : "UDP"
+        44 : "Fragment"
+        58 : "ICMPv6"
+    }
+
+    reserved_octet    fragment.reserved_octet HEX
+    fragment_offset   fragment.offset         DEC
+    reserved_bits     fragment.reserved_bits  HEX
+    more_fragments    fragment.more_fragments BOOL
+    identification    fragment.identification HEX
+
+    payload           fragment.payload        ` + payload.String() + `
+}
+`)
+}

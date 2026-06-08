@@ -18,8 +18,12 @@ func (p Packet) String() string {
 }
 
 var (
-	Ethernet Packet = Packet{value: "Ethernet"}
-	IPv4     Packet = Packet{value: "IPv4"}
-	IPv6     Packet = Packet{value: "IPv6"}
-	TCP      Packet = Packet{value: "TCP"}
+	Ethernet     Packet = Packet{value: "Ethernet"}
+	IPv4         Packet = Packet{value: "IPv4"}
+	IPv6         Packet = Packet{value: "IPv6"}
+	IPv6Fragment Packet = Packet{value: "IPv6Fragment"}
+	TCP          Packet = Packet{value: "TCP"}
+	UDP          Packet = Packet{value: "UDP"}
+	QUICLong     Packet = Packet{value: "QUICLong"}
+	QUICShort    Packet = Packet{value: "QUICShort"}
 )

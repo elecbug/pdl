@@ -15,8 +15,16 @@ func StandardSource(packet pdl.Packet, payload pdl.PayloadFormat) pdl.Source {
 		return ipv4PDL(payload)
 	case pdl.IPv6:
 		return ipv6PDL(payload)
+	case pdl.IPv6Fragment:
+		return ipv6FragmentPDL(payload)
 	case pdl.TCP:
 		return tcpPDL(payload)
+	case pdl.UDP:
+		return udpPDL(payload)
+	case pdl.QUICLong:
+		return quicLongHeaderPDL(payload)
+	case pdl.QUICShort:
+		return quicShortHeaderPDL(payload)
 	default:
 		return pdl.NewSource(`packet ` + packet.String())
 	}

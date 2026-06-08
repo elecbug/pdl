@@ -24,8 +24,12 @@ var (
 )
 
 var (
-	EthernetPayloadFormat PayloadFormat = PayloadFormat{value: "as " + Ethernet.String()} // Payload format for Ethernet packet payloads
-	IPv4PayloadFormat     PayloadFormat = PayloadFormat{value: "as " + IPv4.String()}     // Payload format for IPv4 packet payloads
-	IPv6PayloadFormat     PayloadFormat = PayloadFormat{value: "as " + IPv6.String()}     // Payload format for IPv6 packet payloads
-	TCPPayloadFormat      PayloadFormat = PayloadFormat{value: "as " + TCP.String()}      // Payload format for TCP packet payloads
+	EthernetPayloadFormat     PayloadFormat = PayloadFormat{value: "as " + Ethernet.String()}     // Payload format for Ethernet packet payloads
+	IPv4PayloadFormat         PayloadFormat = PayloadFormat{value: "as " + IPv4.String()}         // Payload format for IPv4 packet payloads
+	IPv6PayloadFormat         PayloadFormat = PayloadFormat{value: "as " + IPv6.String()}         // Payload format for IPv6 packet payloads
+	IPv6FragmentPayloadFormat PayloadFormat = PayloadFormat{value: "as " + IPv6Fragment.String()} // Payload format for IPv6 fragment packet payloads
+	TCPPayloadFormat          PayloadFormat = PayloadFormat{value: "as " + TCP.String()}          // Payload format for TCP packet payloads
+	UDPPayloadFormat          PayloadFormat = PayloadFormat{value: "as " + UDP.String()}          // Payload format for UDP packet payloads
+	QUICLongPayloadFormat     PayloadFormat = PayloadFormat{value: "as " + QUICLong.String()}     // Payload format for QUIC long header packet payloads
+	QUICShortPayloadFormat    PayloadFormat = PayloadFormat{value: "as " + QUICShort.String()}    // Payload format for QUIC short header packet payloads
 )
