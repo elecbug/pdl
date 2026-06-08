@@ -13,31 +13,31 @@ var {
 }
 
 def {
-    version        from 0   length 4
-    ihl            from 4   length 4
-    dscp           from 8   length 6
-    ecn            from 14  length 2
+    version         from 0   length 4
+    ihl             from 4   length 4
+    dscp            from 8   length 6
+    ecn             from 14  length 2
 
-    total_length   from 16  length 16
-    identification from 32  length 16
+    total_length    from 16  length 16
+    identification  from 32  length 16
 
-    flags          from 48  length 3
-    fragment_offset from 51 length 13
+    flags           from 48  length 3
+    fragment_offset from 51  length 13
 
-    ttl            from 64  length 8
-    protocol       from 72  length 8
-    checksum       from 80  length 16
+    ttl             from 64  length 8
+    protocol        from 72  length 8
+    checksum        from 80  length 16
 
-    src_ip         from 96  length 32
-    dst_ip         from 128 length 32
+    src_ip          from 96  length 32
+    dst_ip          from 128 length 32
 
-    options        from fixed_header_bits length (*ihl * 32 - fixed_header_bits)
-    payload        from (*ihl * 32) to end
+    options         from fixed_header_bits length (*ihl * 32 - fixed_header_bits)
+    payload         from (*ihl * 32) to end
 }
 
 out json {
     version         ip.version              DEC
-    ihl             ip.header.length_words  DEC
+    ihl             ip.header_length_words  DEC
     dscp            ip.dscp                 DEC
     ecn             ip.ecn                  DEC
 
