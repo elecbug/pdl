@@ -52,6 +52,8 @@ func BuildJSONWithSet(set *document.DocumentSet, root *document.Document, result
 			if rule.Map != nil {
 				if mapped, ok := rule.Map[key]; ok {
 					outValue = formatter.ConvertMappedValue(mapped)
+				} else if rule.MapDefault != nil {
+					outValue = formatter.ConvertMappedValue(*rule.MapDefault)
 				}
 			}
 		} else if rule.Map != nil {
@@ -60,6 +62,8 @@ func BuildJSONWithSet(set *document.DocumentSet, root *document.Document, result
 
 			if mapped, ok := rule.Map[key]; ok {
 				outValue = formatter.ConvertMappedValue(mapped)
+			} else if rule.MapDefault != nil {
+				outValue = formatter.ConvertMappedValue(*rule.MapDefault)
 			}
 		} else {
 			formatted, err := formatter.FormatValue(value, rule.Format)

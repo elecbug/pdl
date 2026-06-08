@@ -428,12 +428,13 @@ func (p *Parser) parseOutLine() (document.Out, error) {
 	}
 
 	if p.cur.Type == token.LBRACE_SIGN {
-		m, err := p.parseMapBlock()
+		m, def, err := p.parseMapBlock()
 		if err != nil {
 			return document.Out{}, err
 		}
 
 		out.Map = m
+		out.MapDefault = def
 		return out, nil
 	}
 
@@ -441,35 +442,46 @@ func (p *Parser) parseOutLine() (document.Out, error) {
 }
 
 // parseMapBlock parses a brace-enclosed key-value mapping.
-func (p *Parser) parseMapBlock() (map[string]string, error) {
+// It supports numeric/string keys and an optional default mapping.
+func (p *Parser) parseMapBlock() (map[string]string, *string, error) {
 	if err := p.expect(token.LBRACE_SIGN); err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	m := make(map[string]string)
+	var defaultValue *string
 
 	for p.cur.Type != token.RBRACE_SIGN && p.cur.Type != token.EOF {
 		var key string
+		isDefault := false
 
 		switch p.cur.Type {
 		case token.NUMBER:
 			v, err := parseNumber(p.cur.Lit)
 			if err != nil {
-				return nil, p.errf("invalid map key %q", p.cur.Lit)
+				return nil, nil, p.errf("invalid map key %q", p.cur.Lit)
 			}
 			key = strconv.FormatInt(v, 10)
 
 		case token.IDENT:
-			key = p.cur.Lit
+			if p.cur.Lit == "default" {
+				isDefault = true
+			} else {
+				key = p.cur.Lit
+			}
+
+		// token.go에 DEFAULT_KEYWORD를 추가한 경우를 대비
+		case token.DEFAULT_KEYWORD:
+			isDefault = true
 
 		default:
-			return nil, p.errf("expected map key, got %s %q", p.cur.Type, p.cur.Lit)
+			return nil, nil, p.errf("expected map key, got %s %q", p.cur.Type, p.cur.Lit)
 		}
 
 		p.next()
 
 		if err := p.expect(token.COLON_SIGN); err != nil {
-			return nil, err
+			return nil, nil, err
 		}
 
 		var val string
@@ -478,18 +490,27 @@ func (p *Parser) parseMapBlock() (map[string]string, error) {
 		case token.STRING, token.IDENT, token.NUMBER:
 			val = p.cur.Lit
 		default:
-			return nil, p.errf("expected map value, got %s %q", p.cur.Type, p.cur.Lit)
+			return nil, nil, p.errf("expected map value, got %s %q", p.cur.Type, p.cur.Lit)
 		}
 
-		m[key] = val
+		if isDefault {
+			if defaultValue != nil {
+				return nil, nil, p.errf("duplicate default mapping")
+			}
+			v := val
+			defaultValue = &v
+		} else {
+			m[key] = val
+		}
+
 		p.next()
 	}
 
 	if err := p.expect(token.RBRACE_SIGN); err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
-	return m, nil
+	return m, defaultValue, nil
 }
 
 // parseExpr parses an expression using precedence climbing.

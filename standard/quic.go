@@ -38,6 +38,7 @@ out json {
         1 : "0-RTT"
         2 : "Handshake"
         3 : "Retry"
+        default : "Unknown"
     }
 
     type_bits       quic.type_bits HEX

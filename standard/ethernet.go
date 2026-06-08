@@ -24,6 +24,7 @@ out json {
         0x0800 : "IPv4"
         0x86DD : "IPv6"
         0x0806 : "ARP"
+        default : "Unknown"
     }
 
     payload ethernet.payload ` + payload.String() + `

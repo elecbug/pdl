@@ -52,6 +52,7 @@ out json {
         1  : "ICMP"
         6  : "TCP"
         17 : "UDP"
+        default : "Unknown"
     }
 
     checksum        ip.checksum             HEX
@@ -126,6 +127,7 @@ out json {
         59  : "No Next Header"
         60  : "Destination Options"
         132 : "SCTP"
+        default : "Unknown"
     }
 
     hop_limit      ip.hop_limit        DEC
@@ -163,6 +165,7 @@ out json {
         17 : "UDP"
         44 : "Fragment"
         58 : "ICMPv6"
+        default : "Unknown"
     }
 
     reserved_octet    fragment.reserved_octet HEX

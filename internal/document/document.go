@@ -79,6 +79,8 @@ type Out struct {
 	// Map is an optional mapping of decoded values to their corresponding string representations
 	// which can be used for formatting the output.
 	Map map[string]string
+	// MapDefault is an optional default value to use when a decoded value does not have a corresponding entry in the Map.
+	MapDefault *string
 
 	// AsPacket is an optional field that, if set, indicates that the output should be treated as a nested packet
 	AsPacket string
