@@ -114,4 +114,19 @@ type Out struct {
 
 	// AsPacket is an optional field that, if set, indicates that the output should be treated as a nested packet
 	AsPacket string
+
+	// Whether this output uses a switch statement to determine its structure based on the value of a selector expression.
+	UseAsSwitch bool
+	// AsSwitch is the mapping of case values to their corresponding OutAsSwitch structures when UseAsSwitch is true.
+	AsSwitch *OutAsSwitch
+}
+
+// OutAsSwitch represents the structure of a switch statement used in an output specification, containing a selector expression,
+type OutAsSwitch struct {
+	// The expression used to select which case to use for formatting this output, typically based on the value of another field or variable.
+	Selector Expr
+	// Cases is a mapping of case values to their corresponding packet names, defining how to format the output for each case value.
+	Cases map[string]string
+	// Default is an optional default packet name to use when the selector value does not match any of the specified cases.
+	Default *string
 }

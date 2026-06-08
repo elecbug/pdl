@@ -124,58 +124,28 @@ func (c *decodeContext) decodeLayout(name string, layout document.DefLayout) err
 	return nil
 }
 
-// evalExpr evaluates an expression in the context of the current variables and decoded values,
-// returning the resulting integer value or an error if the expression is invalid.
-func (c *decodeContext) evalExpr(expr document.Expr) (int64, error) {
-	switch e := expr.(type) {
-	case document.NumberExpr:
-		return e.Value, nil
-
-	case document.IdentExpr:
-		v, ok := c.vars[e.Name]
-		if !ok {
-			return 0, fmt.Errorf("undefined variable %q", e.Name)
-		}
-		return v, nil
-
-	case document.FieldValueExpr:
-		v, ok := c.values[e.Name]
-		if !ok {
-			return 0, fmt.Errorf("field %q is not decoded yet", e.Name)
-		}
-		return int64(v.UInt), nil
-
-	case document.EndExpr:
-		return int64(len(c.data))*8 - 1, nil
-
-	case document.BinaryExpr:
-		left, err := c.evalExpr(e.Left)
-		if err != nil {
-			return 0, err
-		}
-
-		right, err := c.evalExpr(e.Right)
-		if err != nil {
-			return 0, err
-		}
-
-		switch e.Op {
-		case "+":
-			return left + right, nil
-		case "-":
-			return left - right, nil
-		case "*":
-			return left * right, nil
-		case "/":
-			if right == 0 {
-				return 0, fmt.Errorf("division by zero")
-			}
-			return left / right, nil
-		default:
-			return 0, fmt.Errorf("unknown operator %q", e.Op)
-		}
-
-	default:
-		return 0, fmt.Errorf("unknown expression type %T", expr)
+// ResolveOutAsSwitch resolves the output field name based on the value of a selector expression in an "as switch" rule.
+// It evaluates the selector expression and looks up the corresponding case in the rule's AsSwitch mapping, returning the
+// target field name or an error if no matching case is found.
+func ResolveOutAsSwitch(root *document.Document, result *Result, rule document.Out) (string, error) {
+	if rule.AsSwitch == nil {
+		return "", fmt.Errorf("missing as switch body for field %q", rule.Field)
 	}
+
+	selector, err := evalOutExpr(root, result, rule.AsSwitch.Selector)
+	if err != nil {
+		return "", fmt.Errorf("as switch selector for field %q: %w", rule.Field, err)
+	}
+
+	key := strconv.FormatInt(selector, 10)
+
+	if target, ok := rule.AsSwitch.Cases[key]; ok {
+		return target, nil
+	}
+
+	if rule.AsSwitch.Default != nil {
+		return *rule.AsSwitch.Default, nil
+	}
+
+	return "", fmt.Errorf("no as switch case for field %q selector=%s", rule.Field, key)
 }

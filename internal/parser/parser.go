@@ -516,8 +516,19 @@ func (p *Parser) parseOutLine() (document.Out, error) {
 	if p.cur.Type == token.AS_KEYWORD {
 		p.next()
 
+		if p.cur.Type == token.SWITCH_KEYWORD {
+			sw, err := p.parseOutAsSwitch()
+			if err != nil {
+				return document.Out{}, err
+			}
+
+			out.UseAsSwitch = true
+			out.AsSwitch = sw
+			return out, nil
+		}
+
 		if p.cur.Type != token.IDENT {
-			return document.Out{}, p.errf("expected packet name after as")
+			return document.Out{}, p.errf("expected packet name or switch after as")
 		}
 
 		out.AsPacket = p.cur.Lit
@@ -543,6 +554,84 @@ func (p *Parser) parseOutLine() (document.Out, error) {
 	}
 
 	return document.Out{}, p.errf("expected format, as packet, or map block in out line, got %s %q", p.cur.Type, p.cur.Lit)
+}
+
+// parseOutAsSwitch parses a switch statement in an output specification, which has the form:
+// as switch <selector> { <case key>: <packet or format> ... }
+func (p *Parser) parseOutAsSwitch() (*document.OutAsSwitch, error) {
+	if err := p.expect(token.SWITCH_KEYWORD); err != nil {
+		return nil, err
+	}
+
+	selector, err := p.parseExpr(0)
+	if err != nil {
+		return nil, err
+	}
+
+	if err := p.expect(token.LBRACE_SIGN); err != nil {
+		return nil, err
+	}
+
+	sw := &document.OutAsSwitch{
+		Selector: selector,
+		Cases:    make(map[string]string),
+	}
+
+	for p.cur.Type != token.RBRACE_SIGN && p.cur.Type != token.EOF {
+		isDefault := false
+		var key string
+
+		switch p.cur.Type {
+		case token.NUMBER:
+			v, err := parseNumber(p.cur.Lit)
+			if err != nil {
+				return nil, p.errf("invalid as switch case key %q", p.cur.Lit)
+			}
+			key = strconv.FormatInt(v, 10)
+
+		case token.IDENT:
+			if p.cur.Lit == "default" {
+				isDefault = true
+			} else {
+				key = p.cur.Lit
+			}
+
+		case token.DEFAULT_KEYWORD:
+			isDefault = true
+
+		default:
+			return nil, p.errf("expected as switch case key, got %s %q", p.cur.Type, p.cur.Lit)
+		}
+
+		p.next()
+
+		if err := p.expect(token.COLON_SIGN); err != nil {
+			return nil, err
+		}
+
+		if p.cur.Type != token.IDENT {
+			return nil, p.errf("expected packet or format name in as switch case, got %s %q", p.cur.Type, p.cur.Lit)
+		}
+
+		value := p.cur.Lit
+		p.next()
+
+		if isDefault {
+			if sw.Default != nil {
+				return nil, p.errf("duplicate default as switch case")
+			}
+			v := value
+			sw.Default = &v
+		} else {
+			sw.Cases[key] = value
+		}
+	}
+
+	if err := p.expect(token.RBRACE_SIGN); err != nil {
+		return nil, err
+	}
+
+	return sw, nil
 }
 
 // parseMapBlock parses a brace-enclosed key-value mapping.

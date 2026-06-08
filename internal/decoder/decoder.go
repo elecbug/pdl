@@ -30,7 +30,7 @@ type Result struct {
 }
 
 // Decode takes a document and input data, and returns the decoded result or an error if the decoding
-// process fails. It initializes a decodeContext, evaluates any variables defined in the document,
+// process fails. It initializes a DecodeContext, evaluates any variables defined in the document,
 // and then decodes each field definition according to the specified rules.
 func Decode(doc *document.Document, data []byte) (*Result, error) {
 	ctx := &decodeContext{

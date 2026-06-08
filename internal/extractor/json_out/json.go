@@ -23,7 +23,37 @@ func BuildJSONWithSet(set *document.DocumentSet, root *document.Document, result
 
 		var outValue any
 
-		if rule.AsPacket != "" {
+		if rule.UseAsSwitch {
+			target, err := decoder.ResolveOutAsSwitch(root, result, rule)
+			if err != nil {
+				return nil, err
+			}
+
+			if formatter.IsSupportedFormat(target) {
+				formatted, err := formatter.FormatValue(value, target)
+				if err != nil {
+					return nil, err
+				}
+				outValue = formatted
+			} else {
+				childDoc, ok := set.Documents[target]
+				if !ok {
+					return nil, fmt.Errorf("unknown packet %q", target)
+				}
+
+				childResult, err := decoder.Decode(childDoc, value.Bits)
+				if err != nil {
+					return nil, fmt.Errorf("%w in %q", err, target)
+				}
+
+				childJSON, err := BuildJSONWithSet(set, childDoc, childResult)
+				if err != nil {
+					return nil, fmt.Errorf("%w in %q", err, target)
+				}
+
+				outValue = childJSON
+			}
+		} else if rule.AsPacket != "" {
 			childDoc, ok := set.Documents[rule.AsPacket]
 			if !ok {
 				return nil, fmt.Errorf("unknown packet %q", rule.AsPacket)

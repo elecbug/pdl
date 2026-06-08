@@ -10,7 +10,7 @@ import (
 func StandardSource(packet pdl.Packet, payload pdl.PayloadFormat) pdl.Source {
 	switch packet {
 	case pdl.Ethernet:
-		return ethernetPDL(payload)
+		return ethernetPDL()
 	case pdl.IPv4:
 		return ipv4PDL(payload)
 	case pdl.IPv6:

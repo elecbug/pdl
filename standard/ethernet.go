@@ -2,7 +2,7 @@ package standard
 
 import "github.com/elecbug/pdl"
 
-func ethernetPDL(payload pdl.PayloadFormat) pdl.Source {
+func ethernetPDL() pdl.Source {
 	return pdl.NewSource(`
 packet ` + pdl.Ethernet.String() + `
 
@@ -21,13 +21,18 @@ out json {
     src_mac    ethernet.source      MAC
 
     ether_type ethernet.type {
-        0x0800 : "IPv4"
-        0x86DD : "IPv6"
-        0x0806 : "ARP"
+        0x0800  : "IPv4"
+        0x86DD  : "IPv6"
+        0x0806  : "ARP"
         default : "Unknown"
     }
 
-    payload ethernet.payload ` + payload.String() + `
+    payload ethernet.payload as switch *ether_type {
+        0x0800  : IPv4
+        0x86DD  : IPv6
+        0x0806  : ARP
+        default : HEX
+    }
 }
 `)
 }

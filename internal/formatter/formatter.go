@@ -189,3 +189,14 @@ func formatMAC(v decoder.Value) (string, error) {
 		v.Bits[3], v.Bits[4], v.Bits[5],
 	), nil
 }
+
+// IsSupportedFormat checks if the provided format string is one of the supported output formats.
+
+func IsSupportedFormat(format string) bool {
+	switch format {
+	case "DEC", "HEX", "BIN", "BOOL", "ASCII", "UTF8", "IP4", "IP6", "MAC":
+		return true
+	default:
+		return false
+	}
+}

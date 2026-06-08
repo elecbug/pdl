@@ -172,6 +172,25 @@ def {
 
 ---
 
+### 분기 정의
+
+필드의 길이를 기존에 정의된 필드에 값에 따라 서로 다르게 정의가 가능하다.
+
+```pdl
+def {
+    payload switch *data_offset {
+        1       : from 16 to end
+        2       : from 20 to end
+        3       : from 32 to end
+        default : from 8  to end
+    }
+}
+```
+
+즉, 위 예시에서 `payload` 필드는 `data_offset`에 해당하는 값에 따라 그 길이가 달라진다.
+
+---
+
 ## Output
 
 출력은 out json 블록으로 정의한다.
@@ -280,6 +299,8 @@ out json {
 }
 ```
 
+---
+
 ### Type Mapping
 
 다른 PDL을 바탕으로 출력형을 정의할 수 있다.
@@ -296,6 +317,36 @@ out json {
 {
     "payload": {
         // JSON of TCP format
+    }
+}
+```
+
+---
+
+### 분기 정의
+
+출력 타입 역시 분기 정의가 가능하다.
+
+```pdl
+def {
+    payload from 320 to end
+}
+
+out json {
+    next_header ip.next_header {
+        6       : "TCP"
+        17      : "UDP"
+        44      : "Fragment"
+        58      : "ICMPv6"
+        default : "Unknown"
+    }
+
+    payload ip.payload as switch *next_header {
+        6       : TCP
+        17      : UDP
+        44      : IPv6Fragment
+        58      : ICMPv6
+        default : HEX
     }
 }
 ```
