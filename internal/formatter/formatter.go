@@ -3,6 +3,7 @@ package formatter
 import (
 	"encoding/hex"
 	"fmt"
+	"math/big"
 	"net"
 	"strings"
 
@@ -15,23 +16,16 @@ import (
 func FormatValue(v decoder.Value, format string) (any, error) {
 	switch format {
 	case "DEC":
-		if v.Len > 64 {
-			return nil, fmt.Errorf("DEC requires <= 64 bits, got %d", v.Len)
-		}
-		return v.UInt, nil
-
+		return formatDec(v)
 	case "HEX":
 		return formatHex(v)
-
 	case "BIN":
 		return "0b" + fmt.Sprintf("%0*b", v.Len, v.UInt), nil
-
 	case "BOOL":
 		if v.Len != 1 {
 			return nil, fmt.Errorf("BOOL requires 1 bit, got %d bits", v.Len)
 		}
 		return v.UInt != 0, nil
-
 	case "ASCII":
 		return formatASCII(v)
 	case "UTF8":
@@ -80,6 +74,33 @@ func ConvertMappedValue(s string) any {
 	}
 }
 
+// formatDec converts a decoded value to its decimal string representation. It handles values of any length by using
+// big.Int for values longer than 64 bits. For values of 64 bits or less, it simply formats the uint64 value as a string.
+func formatDec(v decoder.Value) (any, error) {
+	if v.Len == 0 {
+		return "", nil
+	}
+
+	if v.Len <= 64 {
+		return v.UInt, nil
+	}
+
+	n := new(big.Int).SetBytes(v.Bits)
+
+	extraBits := len(v.Bits)*8 - int(v.Len)
+	if extraBits > 0 {
+		mask := new(big.Int).Lsh(big.NewInt(1), uint(v.Len))
+		mask.Sub(mask, big.NewInt(1))
+		n.And(n, mask)
+	}
+
+	return n.String(), nil
+}
+
+// formatHex converts a decoded value to its hexadecimal string representation. It calculates the number of hex digits
+// based on the length of the value in bits and formats it accordingly. For values longer than 64 bits, it uses the
+// hex.EncodeToString function to convert the bit slice to a hexadecimal string, ensuring that it is properly padded
+// to match the expected number of hex digits.
 func formatHex(v decoder.Value) (string, error) {
 	if v.Len == 0 {
 		return "", nil
