@@ -79,3 +79,61 @@ out json {
 }
 `)
 }
+
+func ipv6PDL(payload pdl.PayloadFormat) pdl.Source {
+	return pdl.NewSource(`
+packet ` + pdl.IPv6.String() + `
+
+set mode BIG_ENDIAN MSB_FIRST
+
+var {
+    fixed_header_bits = 320
+}
+
+def {
+    version        from 0   length 4
+    traffic_class  from 4   length 8
+    flow_label     from 12  length 20
+
+    payload_length from 32  length 16
+    next_header    from 48  length 8
+    hop_limit      from 56  length 8
+
+    src_ip         from 64  length 128
+    dst_ip         from 192 length 128
+
+    payload        from fixed_header_bits to end
+}
+
+out json {
+    version        ip.version          DEC
+    traffic_class  ip.traffic_class    DEC
+    flow_label     ip.flow_label       HEX
+
+    payload_length ip.payload_length   DEC
+
+    next_header ip.next_header {
+        0   : "Hop-by-Hop Options"
+        1   : "ICMP"
+        6   : "TCP"
+        17  : "UDP"
+        41  : "IPv6"
+        43  : "Routing"
+        44  : "Fragment"
+        50  : "ESP"
+        51  : "AH"
+        58  : "ICMPv6"
+        59  : "No Next Header"
+        60  : "Destination Options"
+        132 : "SCTP"
+    }
+
+    hop_limit      ip.hop_limit        DEC
+
+    src_ip         ip.source_ip        IP6
+    dst_ip         ip.destination_ip   IP6
+
+    payload        ip.payload          ` + payload.String() + `
+}
+`)
+}

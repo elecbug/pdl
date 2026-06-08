@@ -13,6 +13,8 @@ func StandardSource(packet pdl.Packet, payload pdl.PayloadFormat) pdl.Source {
 		return ethernetPDL(payload)
 	case pdl.IPv4:
 		return ipv4PDL(payload)
+	case pdl.IPv6:
+		return ipv6PDL(payload)
 	case pdl.TCP:
 		return tcpPDL(payload)
 	default:

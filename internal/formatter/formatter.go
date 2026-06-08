@@ -21,10 +21,10 @@ func FormatValue(v decoder.Value, format string) (any, error) {
 		return v.UInt, nil
 
 	case "HEX":
-		return strings.ToUpper(hex.EncodeToString(v.Bits)), nil
+		return "0x" + strings.ToUpper(hex.EncodeToString(v.Bits)), nil
 
 	case "BIN":
-		return fmt.Sprintf("%0*b", v.Len, v.UInt), nil
+		return "0b" + fmt.Sprintf("%0*b", v.Len, v.UInt), nil
 
 	case "BOOL":
 		if v.Len != 1 {

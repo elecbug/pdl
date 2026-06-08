@@ -20,5 +20,6 @@ func (p Packet) String() string {
 var (
 	Ethernet Packet = Packet{value: "Ethernet"}
 	IPv4     Packet = Packet{value: "IPv4"}
+	IPv6     Packet = Packet{value: "IPv6"}
 	TCP      Packet = Packet{value: "TCP"}
 )

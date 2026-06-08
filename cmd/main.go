@@ -17,8 +17,8 @@ func main() {
 
 	scheme, err := pdl.GenerateScheme(
 		pdl.Ethernet,
-		standard.StandardSource(pdl.Ethernet, pdl.IPv4PayloadFormat),
-		standard.StandardSource(pdl.IPv4, pdl.TCPPayloadFormat),
+		standard.StandardSource(pdl.Ethernet, pdl.IPv6PayloadFormat),
+		standard.StandardSource(pdl.IPv6, pdl.TCPPayloadFormat),
 		standard.StandardSource(pdl.TCP, pdl.HexFormat),
 	)
 	if err != nil {
