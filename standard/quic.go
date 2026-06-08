@@ -2,7 +2,7 @@ package standard
 
 import "github.com/elecbug/pdl"
 
-func quicLongHeaderPDL(payload pdl.PayloadFormat) pdl.Source {
+func QUICLongHeaderPDL(payload pdl.PayloadFormat) pdl.Source {
 	return pdl.NewSource(`
 packet ` + pdl.QUICLong.String() + `
 
@@ -34,10 +34,10 @@ out json {
     fixed_bit       quic.fixed_bit   BOOL
 
     packet_type quic.packet_type {
-        0 : "Initial"
-        1 : "0-RTT"
-        2 : "Handshake"
-        3 : "Retry"
+        0       : "Initial"
+        1       : "0-RTT"
+        2       : "Handshake"
+        3       : "Retry"
         default : "Unknown"
     }
 
@@ -56,7 +56,7 @@ out json {
 `)
 }
 
-func quicShortHeaderPDL(payload pdl.PayloadFormat) pdl.Source {
+func QUICShortHeaderPDL(payload pdl.PayloadFormat) pdl.Source {
 	return pdl.NewSource(`
 packet ` + pdl.QUICShort.String() + `
 

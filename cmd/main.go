@@ -17,11 +17,12 @@ func main() {
 
 	scheme, err := pdl.GenerateScheme(
 		pdl.Ethernet,
-		standard.StandardSource(pdl.Ethernet, pdl.IPv6PayloadFormat),
-		standard.StandardSource(pdl.IPv6, pdl.IPv6FragmentPayloadFormat),
-		standard.StandardSource(pdl.IPv6Fragment, pdl.UDPPayloadFormat),
-		standard.StandardSource(pdl.UDP, pdl.QUICShortPayloadFormat),
-		standard.StandardSource(pdl.QUICShort, pdl.HexFormat),
+		standard.EthernetPDL(),
+		standard.IPv4PDL(),
+		standard.IPv6PDL(),
+		standard.IPv6FragmentPDL(),
+		standard.TCPPDL(pdl.HexFormat),
+		standard.UDPPDL(pdl.HexFormat),
 	)
 	if err != nil {
 		log.Fatalf("failed to parse PDL file: %v", err)

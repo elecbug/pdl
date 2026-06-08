@@ -2,7 +2,7 @@ package standard
 
 import "github.com/elecbug/pdl"
 
-func ipv4PDL(payload pdl.PayloadFormat) pdl.Source {
+func IPv4PDL() pdl.Source {
 	return pdl.NewSource(`
 packet ` + pdl.IPv4.String() + `
 
@@ -49,9 +49,9 @@ out json {
     ttl             ip.ttl                  DEC
 
     protocol ip.protocol {
-        1  : "ICMP"
-        6  : "TCP"
-        17 : "UDP"
+        1       : "ICMP"
+        6       : "TCP"
+        17      : "UDP"
         default : "Unknown"
     }
 
@@ -61,7 +61,13 @@ out json {
     dst_ip          ip.destination_ip       IP4
 
     options         ip.options              HEX
-    payload         ip.payload              ` + payload.String() + `
+
+    payload ip.payload as switch *protocol {
+        1       : ICMP
+        6       : TCP
+        17      : UDP
+        default : HEX
+    }
 
     flags<0> ip.flag.reserved {
         0 : false
@@ -81,7 +87,7 @@ out json {
 `)
 }
 
-func ipv6PDL(payload pdl.PayloadFormat) pdl.Source {
+func IPv6PDL() pdl.Source {
 	return pdl.NewSource(`
 packet ` + pdl.IPv6.String() + `
 
@@ -114,19 +120,19 @@ out json {
     payload_length ip.payload_length   DEC
 
     next_header ip.next_header {
-        0   : "Hop-by-Hop Options"
-        1   : "ICMP"
-        6   : "TCP"
-        17  : "UDP"
-        41  : "IPv6"
-        43  : "Routing"
-        44  : "Fragment"
-        50  : "ESP"
-        51  : "AH"
-        58  : "ICMPv6"
-        59  : "No Next Header"
-        60  : "Destination Options"
-        132 : "SCTP"
+        0       : "Hop-by-Hop Options"
+        1       : "ICMP"
+        6       : "TCP"
+        17      : "UDP"
+        41      : "IPv6"
+        43      : "Routing"
+        44      : "Fragment"
+        50      : "ESP"
+        51      : "AH"
+        58      : "ICMPv6"
+        59      : "No Next Header"
+        60      : "Destination Options"
+        132     : "SCTP"
         default : "Unknown"
     }
 
@@ -135,12 +141,18 @@ out json {
     src_ip         ip.source_ip        IP6
     dst_ip         ip.destination_ip   IP6
 
-    payload        ip.payload          ` + payload.String() + `
+    payload ip.payload as switch *next_header {
+        6       : TCP
+        17      : UDP
+        44      : IPv6Fragment
+        58      : ICMPv6
+        default : HEX
+    }
 }
 `)
 }
 
-func ipv6FragmentPDL(payload pdl.PayloadFormat) pdl.Source {
+func IPv6FragmentPDL() pdl.Source {
 	return pdl.NewSource(`
 packet ` + pdl.IPv6Fragment.String() + `
 
@@ -161,10 +173,10 @@ def {
 
 out json {
     next_header fragment.next_header {
-        6  : "TCP"
-        17 : "UDP"
-        44 : "Fragment"
-        58 : "ICMPv6"
+        6       : "TCP"
+        17      : "UDP"
+        44      : "Fragment"
+        58      : "ICMPv6"
         default : "Unknown"
     }
 
@@ -174,7 +186,13 @@ out json {
     more_fragments    fragment.more_fragments BOOL
     identification    fragment.identification HEX
 
-    payload           fragment.payload        ` + payload.String() + `
+    payload fragment.payload as switch *next_header {
+        6       : TCP
+        17      : UDP
+        44      : IPv6Fragment
+        58      : ICMPv6
+        default : HEX
+    }
 }
 `)
 }
