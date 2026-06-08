@@ -21,7 +21,7 @@ func FormatValue(v decoder.Value, format string) (any, error) {
 		return v.UInt, nil
 
 	case "HEX":
-		return "0x" + strings.ToUpper(hex.EncodeToString(v.Bits)), nil
+		return formatHex(v)
 
 	case "BIN":
 		return "0b" + fmt.Sprintf("%0*b", v.Len, v.UInt), nil
@@ -78,6 +78,30 @@ func ConvertMappedValue(s string) any {
 	default:
 		return s
 	}
+}
+
+func formatHex(v decoder.Value) (string, error) {
+	if v.Len == 0 {
+		return "", nil
+	}
+
+	hexDigits := int((v.Len + 3) / 4)
+
+	if v.Len <= 64 {
+		return "0x" + strings.ToUpper(fmt.Sprintf("%0*X", hexDigits, v.UInt)), nil
+	}
+
+	s := strings.ToUpper(hex.EncodeToString(v.Bits))
+
+	if len(s) > hexDigits {
+		s = s[len(s)-hexDigits:]
+	}
+
+	if len(s) < hexDigits {
+		s = strings.Repeat("0", hexDigits-len(s)) + s
+	}
+
+	return "0x" + s, nil
 }
 
 // formatASCII converts a decoded value to its ASCII string representation. It checks that the value is byte-aligned
