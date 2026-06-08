@@ -19,6 +19,7 @@ func main() {
 	scheme, err := pdl.GenerateScheme(
 		pdl.Ethernet,
 		standard.EthernetPDL(),
+		standard.ARPPDL(),
 		standard.IPv4PDL(),
 		standard.IPv6PDL(),
 		standard.IPv6FragmentPDL(),
