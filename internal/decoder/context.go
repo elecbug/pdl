@@ -2,6 +2,7 @@ package decoder
 
 import (
 	"fmt"
+	"strconv"
 
 	"github.com/elecbug/pdl/internal/document"
 )
@@ -22,64 +23,99 @@ type decodeContext struct {
 // decodeDef decodes a single field definition from the document, extracting the specified bits from
 // the input data and storing the result in the context's values map.
 func (c *decodeContext) decodeDef(def document.Def) error {
-	from, err := c.evalExpr(def.From)
+	if def.UseSwitch {
+		if def.Switch == nil {
+			return fmt.Errorf("decode %s: missing switch body", def.Name)
+		}
+
+		selector, err := c.evalExpr(def.Switch.Selector)
+		if err != nil {
+			return fmt.Errorf("decode %s switch selector: %w", def.Name, err)
+		}
+
+		key := strconv.FormatInt(selector, 10)
+
+		layout, ok := def.Switch.Cases[key]
+		if !ok {
+			if def.Switch.Default == nil {
+				return fmt.Errorf("decode %s: no switch case for %s", def.Name, key)
+			}
+			layout = *def.Switch.Default
+		}
+
+		return c.decodeLayout(def.Name, layout)
+	}
+
+	layout := document.DefLayout{
+		From:      def.From,
+		Length:    def.Length,
+		To:        def.To,
+		UseLength: def.UseLength,
+		UseTo:     def.UseTo,
+	}
+
+	return c.decodeLayout(def.Name, layout)
+}
+
+// decodeLayout decodes a field based on the provided layout, which specifies how to determine the starting position and length of the field.
+func (c *decodeContext) decodeLayout(name string, layout document.DefLayout) error {
+	from, err := c.evalExpr(layout.From)
 	if err != nil {
-		return fmt.Errorf("decode %s from: %w", def.Name, err)
+		return fmt.Errorf("decode %s from: %w", name, err)
 	}
 
 	var length int64
 
-	if def.UseLength {
-		length, err = c.evalExpr(def.Length)
+	if layout.UseLength {
+		length, err = c.evalExpr(layout.Length)
 		if err != nil {
-			return fmt.Errorf("decode %s length: %w", def.Name, err)
+			return fmt.Errorf("decode %s length: %w", name, err)
 		}
-	} else if def.UseTo {
-		to, err := c.evalExpr(def.To)
+	} else if layout.UseTo {
+		to, err := c.evalExpr(layout.To)
 		if err != nil {
-			return fmt.Errorf("decode %s to: %w", def.Name, err)
+			return fmt.Errorf("decode %s to: %w", name, err)
 		}
 
-		if _, ok := def.To.(document.EndExpr); ok {
+		if _, ok := layout.To.(document.EndExpr); ok {
 			length = int64(len(c.data))*8 - from
 		} else {
 			length = to - from + 1
 		}
 	} else {
-		return fmt.Errorf("decode %s: missing length or to", def.Name)
+		return fmt.Errorf("decode %s: missing length or to", name)
 	}
 
 	if from < 0 {
-		return fmt.Errorf("decode %s: from is negative: %d", def.Name, from)
+		return fmt.Errorf("decode %s: from is negative: %d", name, from)
 	}
 	if length < 0 {
-		return fmt.Errorf("decode %s: length is negative: %d", def.Name, length)
+		return fmt.Errorf("decode %s: length is negative: %d", name, length)
 	}
 
 	totalBits := int64(len(c.data)) * 8
 	if from+length > totalBits {
 		return fmt.Errorf(
 			"decode %s: field exceeds packet size: from=%d length=%d total=%d",
-			def.Name, from, length, totalBits,
+			name, from, length, totalBits,
 		)
 	}
 
 	bits, err := extractBits(c.data, from, length)
 	if err != nil {
-		return fmt.Errorf("decode %s: %w", def.Name, err)
+		return fmt.Errorf("decode %s: %w", name, err)
 	}
 
 	var u uint64
-
 	if length <= 64 {
 		u, err = bitsToUint(bits, length, c.doc.ByteOrder)
 		if err != nil {
-			return fmt.Errorf("decode %s: %w", def.Name, err)
+			return fmt.Errorf("decode %s: %w", name, err)
 		}
 	}
 
-	c.values[def.Name] = Value{
-		Name: def.Name,
+	c.values[name] = Value{
+		Name: name,
 		Bits: bits,
 		Len:  length,
 		UInt: u,

@@ -244,6 +244,7 @@ out json {
         1 : "ICMP"
         6 : "TCP"
         17 : "UDP"
+        default: "Unknown"
     }
 }
 ```

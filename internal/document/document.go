@@ -60,6 +60,36 @@ type Def struct {
 	UseLength bool
 	// UseTo indicates whether the To expression should be used to determine the field's ending position.
 	UseTo bool
+
+	// Whether this field definition uses a switch statement to determine its structure based on the value of a selector expression.
+	UseSwitch bool
+	// Switch is the mapping of case values to their corresponding DefSwitch structures when UseSwitch is true.
+	Switch *DefSwitch
+}
+
+// DefSwitch represents the structure of a switch statement used in a field definition, containing a selector expression,
+type DefSwitch struct {
+	// The expression used to select which case to use for decoding this field, typically based on the value of another field or variable.
+	Selector Expr
+	// Cases is a mapping of case values to their corresponding DefLayout structures, defining how to decode the field for each case value.
+	Cases map[string]DefLayout
+	// Default is an optional default DefLayout to use when the selector value does not match any of the specified cases.
+	Default *DefLayout
+}
+
+// DefLayout represents the layout of a field definition for a specific case in a switch statement, defining how to determine the starting position,
+type DefLayout struct {
+	// The expression specifying the starting bit position of the field within the input data for this case.
+	From Expr
+	// The expression specifying the length of the field in bits for this case.
+	Length Expr
+	// The expression specifying the ending bit position of the field within the input data for this case.
+	To Expr
+
+	// UseLength indicates whether the Length expression should be used to determine the field's length for this case.
+	UseLength bool
+	// UseTo indicates whether the To expression should be used to determine the field's ending position for this case.
+	UseTo bool
 }
 
 // Out represents an output specification in the document, defining how to format and present a decoded

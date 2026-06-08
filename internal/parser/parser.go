@@ -294,15 +294,119 @@ func (p *Parser) parseDefLine() (document.Def, error) {
 	def := document.Def{Name: p.cur.Lit}
 	p.next()
 
-	if err := p.expect(token.FROM_KEYWORD); err != nil {
+	if p.cur.Type == token.SWITCH_KEYWORD {
+		sw, err := p.parseDefSwitch()
+		if err != nil {
+			return document.Def{}, err
+		}
+
+		def.UseSwitch = true
+		def.Switch = sw
+		return def, nil
+	}
+
+	layout, err := p.parseDefLayout()
+	if err != nil {
 		return document.Def{}, err
+	}
+
+	def.From = layout.From
+	def.Length = layout.Length
+	def.To = layout.To
+	def.UseLength = layout.UseLength
+	def.UseTo = layout.UseTo
+
+	return def, nil
+}
+
+// parseDefSwitch parses a switch statement in a field definition, which has the form:
+func (p *Parser) parseDefSwitch() (*document.DefSwitch, error) {
+	if err := p.expect(token.SWITCH_KEYWORD); err != nil {
+		return nil, err
+	}
+
+	selector, err := p.parseExpr(0)
+	if err != nil {
+		return nil, err
+	}
+
+	if err := p.expect(token.LBRACE_SIGN); err != nil {
+		return nil, err
+	}
+
+	sw := &document.DefSwitch{
+		Selector: selector,
+		Cases:    make(map[string]document.DefLayout),
+	}
+
+	for p.cur.Type != token.RBRACE_SIGN && p.cur.Type != token.EOF {
+		isDefault := false
+		var key string
+
+		switch p.cur.Type {
+		case token.NUMBER:
+			v, err := parseNumber(p.cur.Lit)
+			if err != nil {
+				return nil, p.errf("invalid switch case key %q", p.cur.Lit)
+			}
+			key = strconv.FormatInt(v, 10)
+
+		case token.IDENT:
+			if p.cur.Lit == "default" {
+				isDefault = true
+			} else {
+				key = p.cur.Lit
+			}
+
+		case token.DEFAULT_KEYWORD:
+			isDefault = true
+
+		default:
+			return nil, p.errf("expected switch case key, got %s %q", p.cur.Type, p.cur.Lit)
+		}
+
+		p.next()
+
+		if err := p.expect(token.COLON_SIGN); err != nil {
+			return nil, err
+		}
+
+		layout, err := p.parseDefLayout()
+		if err != nil {
+			return nil, err
+		}
+
+		if isDefault {
+			if sw.Default != nil {
+				return nil, p.errf("duplicate default switch case")
+			}
+			sw.Default = &layout
+		} else {
+			sw.Cases[key] = layout
+		}
+	}
+
+	if err := p.expect(token.RBRACE_SIGN); err != nil {
+		return nil, err
+	}
+
+	return sw, nil
+}
+
+// parseDefLayout parses a field layout specification, which can be either "from X length Y" or "from X to Y".
+func (p *Parser) parseDefLayout() (document.DefLayout, error) {
+	if err := p.expect(token.FROM_KEYWORD); err != nil {
+		return document.DefLayout{}, err
 	}
 
 	from, err := p.parseExpr(0)
 	if err != nil {
-		return document.Def{}, err
+		return document.DefLayout{}, err
 	}
-	def.From = from
+
+	layout := document.DefLayout{
+		From: from,
+	}
 
 	switch p.cur.Type {
 	case token.LENGTH_KEYWORD:
@@ -310,28 +414,28 @@ func (p *Parser) parseDefLine() (document.Def, error) {
 
 		length, err := p.parseExpr(0)
 		if err != nil {
-			return document.Def{}, err
+			return document.DefLayout{}, err
 		}
 
-		def.Length = length
-		def.UseLength = true
+		layout.Length = length
+		layout.UseLength = true
 
 	case token.TO_KEYWORD:
 		p.next()
 
 		to, err := p.parseExpr(0)
 		if err != nil {
-			return document.Def{}, err
+			return document.DefLayout{}, err
 		}
 
-		def.To = to
-		def.UseTo = true
+		layout.To = to
+		layout.UseTo = true
 
 	default:
-		return document.Def{}, p.errf("expected length or to in def line, got %s %q", p.cur.Type, p.cur.Lit)
+		return document.DefLayout{}, p.errf("expected length or to in def layout, got %s %q", p.cur.Type, p.cur.Lit)
 	}
 
-	return def, nil
+	return layout, nil
 }
 
 // parseOutBlock parses an out json block enclosed in braces.
