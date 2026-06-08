@@ -1,19 +1,21 @@
 package standard
 
-import "github.com/elecbug/pdl"
-
-const (
-	Ethernet pdl.PacketType = "Ethernet"
-	IPv4     pdl.PacketType = "IPv4"
-	TCP      pdl.PacketType = "TCP"
-
-	DecimalFormat    pdl.Payload = "DEC"
-	HexFormat        pdl.Payload = "HEX"
-	BinaryFormat     pdl.Payload = "BIN"
-	BooleanFormat    pdl.Payload = "BOOL"
-	ASCIIFormat      pdl.Payload = "ASCII"
-	UTF8Format       pdl.Payload = "UTF8"
-	IPv4Format       pdl.Payload = "IP4"
-	IPv6Format       pdl.Payload = "IP6"
-	MACAddressFormat pdl.Payload = "MAC"
+import (
+	"github.com/elecbug/pdl"
 )
+
+// StandardSource generates a PDL source string for a given packet type and payload format.
+// It returns a pdl.Source that can be used to create a PDL document for decoding packets of the
+// specified type and extracting JSON output in the specified format.
+func StandardSource(packet pdl.Packet, payload pdl.PayloadFormat) pdl.Source {
+	switch packet {
+	case pdl.Ethernet:
+		return ethernetPDL(payload)
+	case pdl.IPv4:
+		return ipv4PDL(payload)
+	case pdl.TCP:
+		return tcpPDL(payload)
+	default:
+		return pdl.NewSource(`packet ` + packet.String())
+	}
+}

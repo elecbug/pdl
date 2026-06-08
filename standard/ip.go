@@ -2,9 +2,9 @@ package standard
 
 import "github.com/elecbug/pdl"
 
-func IPv4PDL(payload pdl.Payload) pdl.Source {
-	return pdl.Source(`
-packet ` + IPv4.String() + `
+func ipv4PDL(payload pdl.PayloadFormat) pdl.Source {
+	return pdl.NewSource(`
+packet ` + pdl.IPv4.String() + `
 
 set mode BIG_ENDIAN MSB_FIRST
 
@@ -60,7 +60,7 @@ out json {
     dst_ip          ip.destination_ip       IP4
 
     options         ip.options              HEX
-    payload         ip.payload              ` + string(payload) + `
+    payload         ip.payload              ` + payload.String() + `
 
     flags<0> ip.flag.reserved {
         0 : false

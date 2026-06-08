@@ -3,12 +3,13 @@ package parser_test
 import (
 	"testing"
 
+	"github.com/elecbug/pdl"
 	"github.com/elecbug/pdl/internal/parser"
 	"github.com/elecbug/pdl/standard"
 )
 
 func TestParseForTCP(t *testing.T) {
-	doc, err := parser.Parse(string(standard.TCPPDL("HEX")))
+	doc, err := parser.Parse(standard.StandardSource(pdl.TCP, pdl.HexFormat).String())
 	if err != nil {
 		t.Fatalf("ParseString failed: %v", err)
 	}

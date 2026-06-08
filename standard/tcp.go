@@ -2,9 +2,9 @@ package standard
 
 import "github.com/elecbug/pdl"
 
-func TCPPDL(payload pdl.Payload) pdl.Source {
-	return pdl.Source(`
-packet ` + TCP.String() + `
+func tcpPDL(payload pdl.PayloadFormat) pdl.Source {
+	return pdl.NewSource(`
+packet ` + pdl.TCP.String() + `
 set mode BIG_ENDIAN MSB_FIRST
 
 def {

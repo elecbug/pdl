@@ -15,11 +15,11 @@ func main() {
 		log.Fatalf("usage: %s <hex_string>", os.Args[0])
 	}
 
-	scheme, err := pdl.Generate(
-		standard.Ethernet,
-		standard.EthernetPDL(standard.IPv4.AsPayload()),
-		standard.IPv4PDL(standard.TCP.AsPayload()),
-		standard.TCPPDL(standard.HexFormat),
+	scheme, err := pdl.GenerateScheme(
+		pdl.Ethernet,
+		standard.StandardSource(pdl.Ethernet, pdl.IPv4PayloadFormat),
+		standard.StandardSource(pdl.IPv4, pdl.TCPPayloadFormat),
+		standard.StandardSource(pdl.TCP, pdl.HexFormat),
 	)
 	if err != nil {
 		log.Fatalf("failed to parse PDL file: %v", err)
