@@ -8,7 +8,6 @@ packet ` + TCP.String() + `
 set mode BIG_ENDIAN MSB_FIRST
 
 def {
-    # Fixed header: 20 bytes
     src_port       from 0   length 16
     dst_port       from 16  length 16
     

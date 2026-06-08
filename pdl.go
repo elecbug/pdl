@@ -13,14 +13,6 @@ type PDL struct {
 	set *document.DocumentSet
 }
 
-// Source is a type alias for string, representing the source of a Source document, which can be used to generate a Document structure.
-type Source string
-
-// String returns the string representation of the Source, which is simply the underlying string value.
-func (s Source) String() string {
-	return string(s)
-}
-
 // Generate takes a main PacketType and one or more Source strings, parses them into a structured DocumentSet,
 // and returns a pointer to a PDL representing the parsed document set. It returns an error if parsing fails.
 func Generate(main PacketType, sources ...Source) (*PDL, error) {
@@ -53,6 +45,14 @@ func (p *PDL) ExtractJSON(packet []byte) (any, error) {
 	}
 
 	return jsonRes, nil
+}
+
+// Source is a type alias for string, representing the source of a Source document, which can be used to generate a Document structure.
+type Source string
+
+// String returns the string representation of the Source, which is simply the underlying string value.
+func (s Source) String() string {
+	return string(s)
 }
 
 // Payload is a type alias for string, representing the name of the main packet type defined in the PDL document.
