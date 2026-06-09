@@ -367,6 +367,8 @@ out json {
 }
 ```
 
+혹은 `as switch {...`로 `val` 부분을 사용하지 않을 수도 있다.
+
 ---
 
 ### Example
