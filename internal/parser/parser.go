@@ -336,36 +336,13 @@ func (p *Parser) parseDefSwitch() (*document.DefSwitch, error) {
 
 	sw := &document.DefSwitch{
 		Selector: selector,
-		Cases:    make(map[string]document.DefLayout),
 	}
 
 	for p.cur.Type != token.RBRACE_SIGN && p.cur.Type != token.EOF {
-		isDefault := false
-		var key string
-
-		switch p.cur.Type {
-		case token.NUMBER:
-			v, err := parseNumber(p.cur.Lit)
-			if err != nil {
-				return nil, p.errf("invalid switch case key %q", p.cur.Lit)
-			}
-			key = strconv.FormatInt(v, 10)
-
-		case token.IDENT:
-			if p.cur.Lit == "default" {
-				isDefault = true
-			} else {
-				key = p.cur.Lit
-			}
-
-		case token.DEFAULT_KEYWORD:
-			isDefault = true
-
-		default:
-			return nil, p.errf("expected switch case key, got %s %q", p.cur.Type, p.cur.Lit)
+		cond, isDefault, err := p.parseSwitchCondition()
+		if err != nil {
+			return nil, err
 		}
-
-		p.next()
 
 		if err := p.expect(token.COLON_SIGN); err != nil {
 			return nil, err
@@ -382,7 +359,10 @@ func (p *Parser) parseDefSwitch() (*document.DefSwitch, error) {
 			}
 			sw.Default = &layout
 		} else {
-			sw.Cases[key] = layout
+			sw.Cases = append(sw.Cases, document.DefSwitchCase{
+				Condition: cond,
+				Layout:    layout,
+			})
 		}
 	}
 
@@ -574,36 +554,13 @@ func (p *Parser) parseOutAsSwitch() (*document.OutAsSwitch, error) {
 
 	sw := &document.OutAsSwitch{
 		Selector: selector,
-		Cases:    make(map[string]string),
 	}
 
 	for p.cur.Type != token.RBRACE_SIGN && p.cur.Type != token.EOF {
-		isDefault := false
-		var key string
-
-		switch p.cur.Type {
-		case token.NUMBER:
-			v, err := parseNumber(p.cur.Lit)
-			if err != nil {
-				return nil, p.errf("invalid as switch case key %q", p.cur.Lit)
-			}
-			key = strconv.FormatInt(v, 10)
-
-		case token.IDENT:
-			if p.cur.Lit == "default" {
-				isDefault = true
-			} else {
-				key = p.cur.Lit
-			}
-
-		case token.DEFAULT_KEYWORD:
-			isDefault = true
-
-		default:
-			return nil, p.errf("expected as switch case key, got %s %q", p.cur.Type, p.cur.Lit)
+		cond, isDefault, err := p.parseSwitchCondition()
+		if err != nil {
+			return nil, err
 		}
-
-		p.next()
 
 		if err := p.expect(token.COLON_SIGN); err != nil {
 			return nil, err
@@ -623,7 +580,10 @@ func (p *Parser) parseOutAsSwitch() (*document.OutAsSwitch, error) {
 			v := value
 			sw.Default = &v
 		} else {
-			sw.Cases[key] = value
+			sw.Cases = append(sw.Cases, document.OutAsSwitchCase{
+				Condition: cond,
+				Value:     value,
+			})
 		}
 	}
 
@@ -663,7 +623,6 @@ func (p *Parser) parseMapBlock() (map[string]string, *string, error) {
 				key = p.cur.Lit
 			}
 
-		// token.go에 DEFAULT_KEYWORD를 추가한 경우를 대비
 		case token.DEFAULT_KEYWORD:
 			isDefault = true
 
@@ -801,4 +760,28 @@ func parseNumber(raw string) (int64, error) {
 	default:
 		return strconv.ParseInt(raw, 10, 64)
 	}
+}
+
+// parseSwitchCondition parses a switch case condition, which can be either a default case or an expression.
+// It returns the parsed expression, a boolean indicating if it's a default case, and any error encountered during parsing.
+func (p *Parser) parseSwitchCondition() (document.Expr, bool, error) {
+	if p.cur.Type == token.DEFAULT_KEYWORD || (p.cur.Type == token.IDENT && p.cur.Lit == "default") {
+		p.next()
+		return nil, true, nil
+	}
+
+	expr, err := p.parseExpr(0)
+	if err != nil {
+		return nil, false, err
+	}
+
+	if _, ok := expr.(document.NumberExpr); ok && p.cur.Type == token.COLON_SIGN {
+		expr = document.BinaryExpr{
+			Op:    "==",
+			Left:  document.IdentExpr{Name: "val"},
+			Right: expr,
+		}
+	}
+
+	return expr, false, nil
 }

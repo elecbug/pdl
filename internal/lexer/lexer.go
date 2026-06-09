@@ -59,11 +59,47 @@ func (l *Lexer) NextToken() token.Token {
 		l.advance()
 		return token.Token{Type: token.RPAREN_SIGN, Lit: ")", Line: startLine, Col: startCol}
 	case '<':
+		if l.peekN(1) == '=' {
+			l.advance()
+			l.advance()
+			return token.Token{Type: token.LESS_EQUAL_SIGN, Lit: "<=", Line: startLine, Col: startCol}
+		}
 		l.advance()
 		return token.Token{Type: token.LANGLE_SIGN, Lit: "<", Line: startLine, Col: startCol}
 	case '>':
+		if l.peekN(1) == '=' {
+			l.advance()
+			l.advance()
+			return token.Token{Type: token.GREATER_EQUAL_SIGN, Lit: ">=", Line: startLine, Col: startCol}
+		}
 		l.advance()
 		return token.Token{Type: token.RANGLE_SIGN, Lit: ">", Line: startLine, Col: startCol}
+	case '=':
+		if l.peekN(1) == '=' {
+			l.advance()
+			l.advance()
+			return token.Token{Type: token.EQUAL_EQUAL_SIGN, Lit: "==", Line: startLine, Col: startCol}
+		}
+		l.advance()
+		return token.Token{Type: token.EQUAL_SIGN, Lit: "=", Line: startLine, Col: startCol}
+	case '!':
+		if l.peekN(1) == '=' {
+			l.advance()
+			l.advance()
+			return token.Token{Type: token.NOT_EQUAL_SIGN, Lit: "!=", Line: startLine, Col: startCol}
+		}
+	case '&':
+		if l.peekN(1) == '&' {
+			l.advance()
+			l.advance()
+			return token.Token{Type: token.AND_AND_SIGN, Lit: "&&", Line: startLine, Col: startCol}
+		}
+	case '|':
+		if l.peekN(1) == '|' {
+			l.advance()
+			l.advance()
+			return token.Token{Type: token.OR_OR_SIGN, Lit: "||", Line: startLine, Col: startCol}
+		}
 	case '*':
 		l.advance()
 		return token.Token{Type: token.STAR_SIGN, Lit: "*", Line: startLine, Col: startCol}
@@ -79,9 +115,6 @@ func (l *Lexer) NextToken() token.Token {
 	case ':':
 		l.advance()
 		return token.Token{Type: token.COLON_SIGN, Lit: ":", Line: startLine, Col: startCol}
-	case '=':
-		l.advance()
-		return token.Token{Type: token.EQUAL_SIGN, Lit: "=", Line: startLine, Col: startCol}
 	case '"':
 		lit, err := l.readString()
 		if err != nil {

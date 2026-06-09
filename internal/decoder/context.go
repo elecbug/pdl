@@ -2,7 +2,6 @@ package decoder
 
 import (
 	"fmt"
-	"strconv"
 
 	"github.com/elecbug/pdl/internal/document"
 )
@@ -24,25 +23,13 @@ type decodeContext struct {
 // the input data and storing the result in the context's values map.
 func (c *decodeContext) decodeDef(def document.Def) error {
 	if def.UseSwitch {
-		if def.Switch == nil {
-			return fmt.Errorf("decode %s: missing switch body", def.Name)
-		}
-
-		selector, err := c.evalExpr(def.Switch.Selector)
+		layout, ok, err := c.resolveDefSwitchLayout(def)
 		if err != nil {
-			return fmt.Errorf("decode %s switch selector: %w", def.Name, err)
+			return err
 		}
-
-		key := strconv.FormatInt(selector, 10)
-
-		layout, ok := def.Switch.Cases[key]
 		if !ok {
-			if def.Switch.Default == nil {
-				return fmt.Errorf("decode %s: no switch case for %s", def.Name, key)
-			}
-			layout = *def.Switch.Default
+			return fmt.Errorf("decode %s: no matching switch case", def.Name)
 		}
-
 		return c.decodeLayout(def.Name, layout)
 	}
 
@@ -132,20 +119,64 @@ func ResolveOutAsSwitch(root *document.Document, result *Result, rule document.O
 		return "", fmt.Errorf("missing as switch body for field %q", rule.Field)
 	}
 
-	selector, err := evalOutExpr(root, result, rule.AsSwitch.Selector)
+	selector, err := evalOutExpr(root, result, rule.AsSwitch.Selector, nil)
 	if err != nil {
 		return "", fmt.Errorf("as switch selector for field %q: %w", rule.Field, err)
 	}
 
-	key := strconv.FormatInt(selector, 10)
+	extra := map[string]int64{
+		"val": selector,
+	}
 
-	if target, ok := rule.AsSwitch.Cases[key]; ok {
-		return target, nil
+	for _, cs := range rule.AsSwitch.Cases {
+		ok, err := evalOutBoolExpr(root, result, cs.Condition, extra)
+		if err != nil {
+			return "", fmt.Errorf("as switch case for field %q: %w", rule.Field, err)
+		}
+
+		if ok {
+			return cs.Value, nil
+		}
 	}
 
 	if rule.AsSwitch.Default != nil {
 		return *rule.AsSwitch.Default, nil
 	}
 
-	return "", fmt.Errorf("no as switch case for field %q selector=%s", rule.Field, key)
+	return "", fmt.Errorf("no matching as switch case for field %q selector=%d", rule.Field, selector)
+}
+
+// resolveDefSwitchLayout resolves the layout for a field definition that uses a switch statement by evaluating the selector
+// expression and finding the matching case in the definition's Switch field. It returns the resolved layout, a boolean
+// indicating whether a matching case was found, and an error if any issues occur during evaluation.
+func (c *decodeContext) resolveDefSwitchLayout(def document.Def) (document.DefLayout, bool, error) {
+	if def.Switch == nil {
+		return document.DefLayout{}, false, fmt.Errorf("decode %s: missing switch body", def.Name)
+	}
+
+	selector, err := c.evalExpr(def.Switch.Selector)
+	if err != nil {
+		return document.DefLayout{}, false, fmt.Errorf("decode %s switch selector: %w", def.Name, err)
+	}
+
+	extra := map[string]int64{
+		"val": selector,
+	}
+
+	for _, cs := range def.Switch.Cases {
+		ok, err := c.evalBoolExpr(cs.Condition, extra)
+		if err != nil {
+			return document.DefLayout{}, false, fmt.Errorf("decode %s switch case: %w", def.Name, err)
+		}
+
+		if ok {
+			return cs.Layout, true, nil
+		}
+	}
+
+	if def.Switch.Default != nil {
+		return *def.Switch.Default, true, nil
+	}
+
+	return document.DefLayout{}, false, nil
 }

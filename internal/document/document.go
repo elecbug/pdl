@@ -67,16 +67,6 @@ type Def struct {
 	Switch *DefSwitch
 }
 
-// DefSwitch represents the structure of a switch statement used in a field definition, containing a selector expression,
-type DefSwitch struct {
-	// The expression used to select which case to use for decoding this field, typically based on the value of another field or variable.
-	Selector Expr
-	// Cases is a mapping of case values to their corresponding DefLayout structures, defining how to decode the field for each case value.
-	Cases map[string]DefLayout
-	// Default is an optional default DefLayout to use when the selector value does not match any of the specified cases.
-	Default *DefLayout
-}
-
 // DefLayout represents the layout of a field definition for a specific case in a switch statement, defining how to determine the starting position,
 type DefLayout struct {
 	// The expression specifying the starting bit position of the field within the input data for this case.
@@ -121,12 +111,51 @@ type Out struct {
 	AsSwitch *OutAsSwitch
 }
 
-// OutAsSwitch represents the structure of a switch statement used in an output specification, containing a selector expression,
+// SwitchCase represents a single case in a switch statement, containing the condition expression that determines when
+// this case applies and the corresponding value to match against.
+type SwitchCase struct {
+	// The expression that evaluates to a value used to determine if this case matches during decoding.
+	Condition Expr
+	// The value to match against the selector expression when this case is evaluated during decoding.
+	Value string
+}
+
+// OutAsSwitch represents the structure of an output specification for a specific case in a switch statement,
+// defining how to format and present the output based on the value of a selector expression.
 type OutAsSwitch struct {
-	// The expression used to select which case to use for formatting this output, typically based on the value of another field or variable.
+	// The expression that evaluates to a value used to determine which case applies during decoding.
 	Selector Expr
-	// Cases is a mapping of case values to their corresponding packet names, defining how to format the output for each case value.
-	Cases map[string]string
-	// Default is an optional default packet name to use when the selector value does not match any of the specified cases.
+	// The list of cases in this switch statement, where each case defines a condition and a corresponding value to match against the selector expression.
+	Cases []OutAsSwitchCase
+	// An optional default value to use when the selector expression does not match any of the specified cases.
 	Default *string
+}
+
+// OutAsSwitchCase represents a single case in a switch statement for output specifications, containing the condition expression that determines when
+// this case applies and the corresponding value to use for formatting the output when this case matches.
+type OutAsSwitchCase struct {
+	// The expression that evaluates to a value used to determine if this case matches during output formatting.
+	Condition Expr
+	// The value to use for formatting the output when this case is evaluated during output formatting.
+	Value string
+}
+
+// DefSwitchCase represents a single case in a switch statement for field definitions, containing the condition expression that determines when
+// this case applies and the corresponding layout to use for decoding the field when this case matches.
+type DefSwitchCase struct {
+	// The expression that evaluates to a value used to determine if this case matches during decoding.
+	Condition Expr
+	// The layout to use for decoding the field when this case matches, which specifies how to determine the starting position and length of the field.
+	Layout DefLayout
+}
+
+// DefSwitch represents the structure of a field definition for a specific case in a switch statement,
+// defining how to determine the starting position and length of the field based on the value of a selector expression.
+type DefSwitch struct {
+	// The expression that evaluates to a value used to determine which case applies during decoding.
+	Selector Expr
+	// The list of cases in this switch statement, where each case defines a condition and a corresponding layout to use for decoding the field when that case matches.
+	Cases []DefSwitchCase
+	// An optional default layout to use for decoding the field when the selector expression does not match any of the specified cases.
+	Default *DefLayout
 }
