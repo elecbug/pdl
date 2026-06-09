@@ -2,17 +2,17 @@ package standard
 
 import "github.com/elecbug/pdl"
 
-// GenericSources returns a list of PDL sources for common network protocols.
-func GenericSources() []pdl.Source {
+// CommonSources returns a list of PDL sources for common network protocols.
+func CommonSources() []pdl.Source {
 	return []pdl.Source{
-		EthernetPDL(),
-		ARPPDL(),
-		IPv4PDL(),
-		IPv6PDL(),
-		IPv6FragmentPDL(),
-		TCPPDL(pdl.HexFormat),
-		UDPPDL(pdl.HexFormat),
-		ICMPPDL(pdl.HexFormat),
-		ICMPv6PDL(pdl.HexFormat),
+		EthernetSource(),
+		ARPSource(),
+		IPv4Source(),
+		IPv6Source(),
+		IPv6FragmentSource(),
+		TCPSource(pdl.HexFormat),
+		UDPSource(pdl.HexFormat),
+		ICMPSource(pdl.HexFormat),
+		ICMPv6Source(pdl.HexFormat),
 	}
 }

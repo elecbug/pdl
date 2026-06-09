@@ -2,7 +2,7 @@ package standard
 
 import "github.com/elecbug/pdl"
 
-func ARPPDL() pdl.Source {
+func ARPSource() pdl.Source {
 	return pdl.NewSource(`
 packet ` + pdl.ARP.String() + `
 

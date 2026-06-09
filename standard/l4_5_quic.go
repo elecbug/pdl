@@ -2,7 +2,7 @@ package standard
 
 import "github.com/elecbug/pdl"
 
-func QUICLongHeaderPDL(payload pdl.PayloadFormat) pdl.Source {
+func QUICLongHeaderSource(payload pdl.PayloadFormat) pdl.Source {
 	return pdl.NewSource(`
 packet ` + pdl.QUICLong.String() + `
 
@@ -56,7 +56,7 @@ out json {
 `)
 }
 
-func QUICShortHeaderPDL(payload pdl.PayloadFormat) pdl.Source {
+func QUICShortHeaderSource(payload pdl.PayloadFormat) pdl.Source {
 	return pdl.NewSource(`
 packet ` + pdl.QUICShort.String() + `
 

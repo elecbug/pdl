@@ -2,7 +2,7 @@ package standard
 
 import "github.com/elecbug/pdl"
 
-func ICMPPDL(paylaod pdl.PayloadFormat) pdl.Source {
+func ICMPSource(paylaod pdl.PayloadFormat) pdl.Source {
 	return pdl.NewSource(`
 packet ` + pdl.ICMP.String() + `
 
@@ -38,7 +38,7 @@ out json {
 `)
 }
 
-func ICMPv6PDL(payload pdl.PayloadFormat) pdl.Source {
+func ICMPv6Source(payload pdl.PayloadFormat) pdl.Source {
 	return pdl.NewSource(`
 packet ` + pdl.ICMPv6.String() + `
 

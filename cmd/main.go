@@ -17,7 +17,7 @@ func main() {
 
 	scheme, err := pdl.GenerateScheme(
 		pdl.Ethernet,
-		standard.GenericSources()...,
+		standard.CommonSources()...,
 	)
 	if err != nil {
 		log.Fatalf("failed to parse PDL file: %v", err)

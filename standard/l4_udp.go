@@ -2,7 +2,7 @@ package standard
 
 import "github.com/elecbug/pdl"
 
-func UDPPDL(payload pdl.PayloadFormat) pdl.Source {
+func UDPSource(payload pdl.PayloadFormat) pdl.Source {
 	return pdl.NewSource(`
 packet ` + pdl.UDP.String() + `
 

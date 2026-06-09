@@ -2,7 +2,7 @@ package standard
 
 import "github.com/elecbug/pdl"
 
-func IPv4PDL() pdl.Source {
+func IPv4Source() pdl.Source {
 	return pdl.NewSource(`
 packet ` + pdl.IPv4.String() + `
 
@@ -87,7 +87,7 @@ out json {
 `)
 }
 
-func IPv6PDL() pdl.Source {
+func IPv6Source() pdl.Source {
 	return pdl.NewSource(`
 packet ` + pdl.IPv6.String() + `
 
@@ -152,7 +152,7 @@ out json {
 `)
 }
 
-func IPv6FragmentPDL() pdl.Source {
+func IPv6FragmentSource() pdl.Source {
 	return pdl.NewSource(`
 packet ` + pdl.IPv6Fragment.String() + `
 
