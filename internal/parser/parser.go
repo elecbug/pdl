@@ -325,9 +325,14 @@ func (p *Parser) parseDefSwitch() (*document.DefSwitch, error) {
 		return nil, err
 	}
 
-	selector, err := p.parseExpr(0)
-	if err != nil {
-		return nil, err
+	var selector document.Expr
+
+	if p.cur.Type != token.LBRACE_SIGN {
+		var err error
+		selector, err = p.parseExpr(0)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	if err := p.expect(token.LBRACE_SIGN); err != nil {
@@ -338,8 +343,10 @@ func (p *Parser) parseDefSwitch() (*document.DefSwitch, error) {
 		Selector: selector,
 	}
 
+	hasSelector := selector != nil
+
 	for p.cur.Type != token.RBRACE_SIGN && p.cur.Type != token.EOF {
-		cond, isDefault, err := p.parseSwitchCondition()
+		cond, isDefault, err := p.parseSwitchCondition(hasSelector)
 		if err != nil {
 			return nil, err
 		}
@@ -543,9 +550,14 @@ func (p *Parser) parseOutAsSwitch() (*document.OutAsSwitch, error) {
 		return nil, err
 	}
 
-	selector, err := p.parseExpr(0)
-	if err != nil {
-		return nil, err
+	var selector document.Expr
+
+	if p.cur.Type != token.LBRACE_SIGN {
+		var err error
+		selector, err = p.parseExpr(0)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	if err := p.expect(token.LBRACE_SIGN); err != nil {
@@ -556,8 +568,10 @@ func (p *Parser) parseOutAsSwitch() (*document.OutAsSwitch, error) {
 		Selector: selector,
 	}
 
+	hasSelector := selector != nil
+
 	for p.cur.Type != token.RBRACE_SIGN && p.cur.Type != token.EOF {
-		cond, isDefault, err := p.parseSwitchCondition()
+		cond, isDefault, err := p.parseSwitchCondition(hasSelector)
 		if err != nil {
 			return nil, err
 		}
@@ -764,7 +778,7 @@ func parseNumber(raw string) (int64, error) {
 
 // parseSwitchCondition parses a switch case condition, which can be either a default case or an expression.
 // It returns the parsed expression, a boolean indicating if it's a default case, and any error encountered during parsing.
-func (p *Parser) parseSwitchCondition() (document.Expr, bool, error) {
+func (p *Parser) parseSwitchCondition(hasSelector bool) (document.Expr, bool, error) {
 	if p.cur.Type == token.DEFAULT_KEYWORD || (p.cur.Type == token.IDENT && p.cur.Lit == "default") {
 		p.next()
 		return nil, true, nil
@@ -776,6 +790,10 @@ func (p *Parser) parseSwitchCondition() (document.Expr, bool, error) {
 	}
 
 	if _, ok := expr.(document.NumberExpr); ok && p.cur.Type == token.COLON_SIGN {
+		if !hasSelector {
+			return nil, false, p.errf("numeric switch case requires a selector")
+		}
+
 		expr = document.BinaryExpr{
 			Op:    "==",
 			Left:  document.IdentExpr{Name: "val"},

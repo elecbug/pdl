@@ -49,7 +49,7 @@ def {
 }
 
 out json {
-    payload quic as switch *packet_type {
+    payload long_header as switch *packet_type {
         0       : ` + pdl.QUICInitialLike.String() + `
         1       : ` + pdl.QUICInitialLike.String() + `
         2       : ` + pdl.QUICInitialLike.String() + `
@@ -137,39 +137,39 @@ def {
 }
 
 out json {
-    first_byte        quic.first_byte HEX
+    first_byte        initial.first_byte HEX
 
-    header_form       quic.header_form BOOL
-    fixed_bit         quic.fixed_bit   BOOL
+    header_form       initial.header_form BOOL
+    fixed_bit         initial.fixed_bit   BOOL
 
-    packet_type quic.packet_type {
+    packet_type initial.packet_type {
         0       : "Initial"
         1       : "0-RTT"
         2       : "Handshake"
         default : "Unknown"
     }
 
-    reserved_bits     quic.reserved_bits HEX
-    packet_number_len quic.packet_number_length_raw DEC
+    reserved_bits     initial.reserved_bits HEX
+    packet_number_len initial.packet_number_length_raw DEC
 
-    version           quic.version HEX
+    version           initial.version HEX
 
-    dcid_len          quic.destination_connection_id_length DEC
-    dcid              quic.destination_connection_id HEX
+    dcid_len          initial.destination_connection_id_length DEC
+    dcid              initial.destination_connection_id HEX
 
-    scid_len          quic.source_connection_id_length DEC
-    scid              quic.source_connection_id HEX
+    scid_len          initial.source_connection_id_length DEC
+    scid              initial.source_connection_id HEX
 
-    token_len_prefix  quic.token_length_prefix DEC
-    token_len         quic.token_length DEC
-    token             quic.token HEX
+    token_len_prefix  initial.token_length_prefix DEC
+    token_len         initial.token_length DEC
+    token             initial.token HEX
 
-    length_prefix     quic.length_prefix DEC
-    len               quic.length DEC
+    length_prefix     initial.length_prefix DEC
+    len               initial.length DEC
 
-    packet_number     quic.packet_number DEC
+    packet_number     initial.packet_number DEC
 
-    payload           quic.payload ` + payload.String() + `
+    payload           initial.payload ` + payload.String() + `
 }
 `)
 }
@@ -205,28 +205,28 @@ def {
 }
 
 out json {
-    first_byte         quic.first_byte HEX
+    first_byte         retry.first_byte HEX
 
-    header_form        quic.header_form BOOL
-    fixed_bit          quic.fixed_bit   BOOL
+    header_form        retry.header_form BOOL
+    fixed_bit          retry.fixed_bit   BOOL
 
-    packet_type quic.packet_type {
+    packet_type retry.packet_type {
         3       : "Retry"
         default : "Unknown"
     }
 
-    type_bits          quic.type_bits HEX
+    type_bits          retry.type_bits HEX
 
-    version            quic.version HEX
+    version            retry.version HEX
 
-    dcid_len           quic.destination_connection_id_length DEC
-    dcid               quic.destination_connection_id HEX
+    dcid_len           retry.destination_connection_id_length DEC
+    dcid               retry.destination_connection_id HEX
 
-    scid_len           quic.source_connection_id_length DEC
-    scid               quic.source_connection_id HEX
+    scid_len           retry.source_connection_id_length DEC
+    scid               retry.source_connection_id HEX
 
-    retry_token         quic.retry_token HEX
-    retry_integrity_tag quic.retry_integrity_tag HEX
+    retry_token         retry.retry_token HEX
+    retry_integrity_tag retry.retry_integrity_tag HEX
 }
 `)
 }
@@ -263,19 +263,19 @@ def {
 }
 
 out json {
-    first_byte        quic.first_byte HEX
+    first_byte        short_header.first_byte HEX
 
-    header_form       quic.header_form BOOL
-    fixed_bit         quic.fixed_bit   BOOL
-    spin_bit          quic.spin_bit    BOOL
+    header_form       short_header.header_form BOOL
+    fixed_bit         short_header.fixed_bit   BOOL
+    spin_bit          short_header.spin_bit    BOOL
 
-    reserved_bits     quic.reserved_bits HEX
-    key_phase         quic.key_phase BOOL
+    reserved_bits     short_header.reserved_bits HEX
+    key_phase         short_header.key_phase BOOL
 
-    packet_number_len quic.packet_number_length_raw DEC
-    packet_number     quic.packet_number DEC
+    packet_number_len short_header.packet_number_length_raw DEC
+    packet_number     short_header.packet_number DEC
 
-    payload           quic.payload ` + payload.String() + `
+    payload           short_header.payload ` + payload.String() + `
 }
 `)
 }

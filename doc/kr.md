@@ -401,36 +401,10 @@ out json {
 
 ---
 
-## 현재 구현 범위
-
-지원됨:
-
-* packet
-* set mode
-* var
-* 산술식 (+,-,*,/)
-* def
-* from
-* length
-* to
-* end
-* *field 참조
-* out json
-* DEC
-* HEX
-* BIN
-* BOOL
-* JSON Path
-* flags<n>
-* Value Mapping
-* as
-
----
-
 ## 향후 확장 예정
 
-* struct
-* array
+* repeat
+* bit operation
 * UTF16
 * BASE64
 * BASE58

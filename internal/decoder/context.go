@@ -119,13 +119,17 @@ func ResolveOutAsSwitch(root *document.Document, result *Result, rule document.O
 		return "", fmt.Errorf("missing as switch body for field %q", rule.Field)
 	}
 
-	selector, err := evalOutExpr(root, result, rule.AsSwitch.Selector, nil)
-	if err != nil {
-		return "", fmt.Errorf("as switch selector for field %q: %w", rule.Field, err)
-	}
+	var extra map[string]int64
 
-	extra := map[string]int64{
-		"val": selector,
+	if rule.AsSwitch.Selector != nil {
+		selector, err := evalOutExpr(root, result, rule.AsSwitch.Selector, nil)
+		if err != nil {
+			return "", fmt.Errorf("as switch selector for field %q: %w", rule.Field, err)
+		}
+
+		extra = map[string]int64{
+			"val": selector,
+		}
 	}
 
 	for _, cs := range rule.AsSwitch.Cases {
@@ -143,7 +147,7 @@ func ResolveOutAsSwitch(root *document.Document, result *Result, rule document.O
 		return *rule.AsSwitch.Default, nil
 	}
 
-	return "", fmt.Errorf("no matching as switch case for field %q selector=%d", rule.Field, selector)
+	return "", fmt.Errorf("no matching as switch case for field %q", rule.Field)
 }
 
 // resolveDefSwitchLayout resolves the layout for a field definition that uses a switch statement by evaluating the selector
@@ -154,13 +158,17 @@ func (c *decodeContext) resolveDefSwitchLayout(def document.Def) (document.DefLa
 		return document.DefLayout{}, false, fmt.Errorf("decode %s: missing switch body", def.Name)
 	}
 
-	selector, err := c.evalExpr(def.Switch.Selector)
-	if err != nil {
-		return document.DefLayout{}, false, fmt.Errorf("decode %s switch selector: %w", def.Name, err)
-	}
+	var extra map[string]int64
 
-	extra := map[string]int64{
-		"val": selector,
+	if def.Switch.Selector != nil {
+		selector, err := c.evalExpr(def.Switch.Selector)
+		if err != nil {
+			return document.DefLayout{}, false, fmt.Errorf("decode %s switch selector: %w", def.Name, err)
+		}
+
+		extra = map[string]int64{
+			"val": selector,
+		}
 	}
 
 	for _, cs := range def.Switch.Cases {

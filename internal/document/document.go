@@ -120,6 +120,17 @@ type SwitchCase struct {
 	Value string
 }
 
+// DefSwitch represents the structure of a field definition for a specific case in a switch statement,
+// defining how to determine the starting position and length of the field based on the value of a selector expression.
+type DefSwitch struct {
+	// The expression that evaluates to a value used to determine which case applies during decoding.
+	Selector Expr
+	// The list of cases in this switch statement, where each case defines a condition and a corresponding layout to use for decoding the field when that case matches.
+	Cases []DefSwitchCase
+	// An optional default layout to use for decoding the field when the selector expression does not match any of the specified cases.
+	Default *DefLayout
+}
+
 // OutAsSwitch represents the structure of an output specification for a specific case in a switch statement,
 // defining how to format and present the output based on the value of a selector expression.
 type OutAsSwitch struct {
@@ -147,15 +158,4 @@ type DefSwitchCase struct {
 	Condition Expr
 	// The layout to use for decoding the field when this case matches, which specifies how to determine the starting position and length of the field.
 	Layout DefLayout
-}
-
-// DefSwitch represents the structure of a field definition for a specific case in a switch statement,
-// defining how to determine the starting position and length of the field based on the value of a selector expression.
-type DefSwitch struct {
-	// The expression that evaluates to a value used to determine which case applies during decoding.
-	Selector Expr
-	// The list of cases in this switch statement, where each case defines a condition and a corresponding layout to use for decoding the field when that case matches.
-	Cases []DefSwitchCase
-	// An optional default layout to use for decoding the field when the selector expression does not match any of the specified cases.
-	Default *DefLayout
 }
