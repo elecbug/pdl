@@ -22,8 +22,3 @@ var (
 	IPv6Format       PayloadFormat = PayloadFormat{value: "IP6"}   // IPv6 format for IP addresses. e.g. 2001:0db8:85a3:0000:0000:8a2e:0370:7334
 	MACAddressFormat PayloadFormat = PayloadFormat{value: "MAC"}   // MAC address format for network interfaces. e.g. 00:1A:2B:3C:4D:5E
 )
-
-var (
-	QUICLongPayloadFormat  PayloadFormat = PayloadFormat{value: "as " + QUICLong.String()}  // Payload format for QUIC long header packet payloads
-	QUICShortPayloadFormat PayloadFormat = PayloadFormat{value: "as " + QUICShort.String()} // Payload format for QUIC short header packet payloads
-)

@@ -11,8 +11,14 @@ func CommonSources() []pdl.Source {
 		IPv6Source(),
 		IPv6FragmentSource(),
 		TCPSource(pdl.HexFormat),
-		UDPSource(pdl.HexFormat),
+		UDPSource(),
 		ICMPSource(pdl.HexFormat),
 		ICMPv6Source(pdl.HexFormat),
+		DNSSource(pdl.HexFormat),
+		QUICSource(),
+		QUICLongHeaderSource(pdl.HexFormat),
+		QUICInitialLikeSource(pdl.HexFormat),
+		QUICRetrySource(pdl.HexFormat),
+		QUICShortHeaderSource(pdl.HexFormat),
 	}
 }

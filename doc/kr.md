@@ -351,6 +351,22 @@ out json {
 }
 ```
 
+`val` 키워드를 사용하면 조건 식으로 연산할 수도 있다.
+
+```pdl
+out json {
+    src_port    udp.source_port      DEC
+    dst_port    udp.destination_port DEC
+    len         udp.length           DEC
+    checksum    udp.checksum         HEX
+
+    payload udp.payload as switch *dst_port {
+        val == 443 || *src_port == 443 : QUIC
+        default                        : HEX
+    }
+}
+```
+
 ---
 
 ### Example
@@ -413,7 +429,6 @@ out json {
 
 ## 향후 확장 예정
 
-* if / else
 * struct
 * array
 * UTF16

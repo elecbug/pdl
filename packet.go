@@ -18,16 +18,20 @@ func (p Packet) String() string {
 }
 
 var (
-	Unknown      Packet = Packet{value: "Unknown"}
-	Ethernet     Packet = Packet{value: "Ethernet"}
-	ARP          Packet = Packet{value: "ARP"}
-	IPv4         Packet = Packet{value: "IPv4"}
-	IPv6         Packet = Packet{value: "IPv6"}
-	IPv6Fragment Packet = Packet{value: "IPv6Fragment"}
-	ICMP         Packet = Packet{value: "ICMP"}
-	ICMPv6       Packet = Packet{value: "ICMPv6"}
-	TCP          Packet = Packet{value: "TCP"}
-	UDP          Packet = Packet{value: "UDP"}
-	QUICLong     Packet = Packet{value: "QUICLong"}
-	QUICShort    Packet = Packet{value: "QUICShort"}
+	Unknown         Packet = Packet{value: "Unknown"}
+	Ethernet        Packet = Packet{value: "Ethernet"}
+	ARP             Packet = Packet{value: "ARP"}
+	IPv4            Packet = Packet{value: "IPv4"}
+	IPv6            Packet = Packet{value: "IPv6"}
+	IPv6Fragment    Packet = Packet{value: "IPv6Fragment"}
+	ICMP            Packet = Packet{value: "ICMP"}
+	ICMPv6          Packet = Packet{value: "ICMPv6"}
+	TCP             Packet = Packet{value: "TCP"}
+	UDP             Packet = Packet{value: "UDP"}
+	DNS             Packet = Packet{value: "DNS"}
+	QUIC            Packet = Packet{value: "QUIC"}
+	QUICLong        Packet = Packet{value: "QUICLong"}
+	QUICInitialLike Packet = Packet{value: "QUICInitialLike"}
+	QUICRetry       Packet = Packet{value: "QUICRetry"}
+	QUICShort       Packet = Packet{value: "QUICShort"}
 )

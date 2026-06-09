@@ -2,7 +2,7 @@ package standard
 
 import "github.com/elecbug/pdl"
 
-func UDPSource(payload pdl.PayloadFormat) pdl.Source {
+func UDPSource() pdl.Source {
 	return pdl.NewSource(`
 packet ` + pdl.UDP.String() + `
 
@@ -23,7 +23,12 @@ out json {
     len         udp.length           DEC
     checksum    udp.checksum         HEX
 
-    payload     udp.payload          ` + payload.String() + `
+    payload udp.payload as switch *dst_port {
+        val == 443 || *src_port == 443      : ` + pdl.QUIC.String() + `
+        val == 53  || *src_port == 53       : ` + pdl.DNS.String() + `
+        val == 5353 || *src_port == 5353      : ` + pdl.DNS.String() + `
+        default                             : ` + pdl.HexFormat.String() + `
+    }
 }
 `)
 }
