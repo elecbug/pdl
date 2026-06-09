@@ -36,50 +36,50 @@ def {
 }
 
 out json {
-    version         ip.version              DEC
-    ihl             ip.header_length_words  DEC
-    dscp            ip.dscp                 DEC
-    ecn             ip.ecn                  DEC
+    version         ipv4.version              DEC
+    ihl             ipv4.header_length_words  DEC
+    dscp            ipv4.dscp                 DEC
+    ecn             ipv4.ecn                  DEC
 
-    total_length    ip.total_length         DEC
-    identification  ip.identification       HEX
+    total_length    ipv4.total_length         DEC
+    identification  ipv4.identification       HEX
 
-    fragment_offset ip.fragment_offset      DEC
+    fragment_offset ipv4.fragment_offset      DEC
 
-    ttl             ip.ttl                  DEC
+    ttl             ipv4.ttl                  DEC
 
-    protocol ip.protocol {
+    protocol ipv4.protocol {
         1       : "ICMP"
         6       : "TCP"
         17      : "UDP"
         default : "Unknown"
     }
 
-    checksum        ip.checksum             HEX
+    checksum        ipv4.checksum             HEX
 
-    src_ip          ip.source_ip            IP4
-    dst_ip          ip.destination_ip       IP4
+    src_ip          ipv4.source_ip            IP4
+    dst_ip          ipv4.destination_ip       IP4
 
-    options         ip.options              HEX
+    options         ipv4.options              HEX
 
-    payload ip.payload as switch *protocol {
+    payload ipv4.payload as switch *protocol {
         1       : ` + pdl.ICMP.String() + `
         6       : ` + pdl.TCP.String() + `
         17      : ` + pdl.UDP.String() + `
         default : ` + pdl.HexFormat.String() + `
     }
 
-    flags<0> ip.flag.reserved {
+    flags<0> ipv4.flag.reserved {
         0 : false
         1 : true
     }
 
-    flags<1> ip.flag.dont_fragment {
+    flags<1> ipv4.flag.dont_fragment {
         0 : false
         1 : true
     }
 
-    flags<2> ip.flag.more_fragments {
+    flags<2> ipv4.flag.more_fragments {
         0 : false
         1 : true
     }
@@ -113,13 +113,13 @@ def {
 }
 
 out json {
-    version        ip.version          DEC
-    traffic_class  ip.traffic_class    DEC
-    flow_label     ip.flow_label       HEX
+    version        ipv6.version          DEC
+    traffic_class  ipv6.traffic_class    DEC
+    flow_label     ipv6.flow_label       HEX
 
-    payload_length ip.payload_length   DEC
+    payload_length ipv6.payload_length   DEC
 
-    next_header ip.next_header {
+    next_header ipv6.next_header {
         0       : "Hop-by-Hop Options"
         1       : "ICMP"
         6       : "TCP"
@@ -136,12 +136,12 @@ out json {
         default : "Unknown"
     }
 
-    hop_limit      ip.hop_limit        DEC
+    hop_limit      ipv6.hop_limit        DEC
 
-    src_ip         ip.source_ip        IP6
-    dst_ip         ip.destination_ip   IP6
+    src_ip         ipv6.source_ip        IP6
+    dst_ip         ipv6.destination_ip   IP6
 
-    payload ip.payload as switch *next_header {
+    payload ipv6.payload as switch *next_header {
         6       : ` + pdl.TCP.String() + `
         17      : ` + pdl.UDP.String() + `
         44      : ` + pdl.IPv6Fragment.String() + `
