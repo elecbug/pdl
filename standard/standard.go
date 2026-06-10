@@ -20,5 +20,6 @@ func CommonSources() []pdl.Source {
 		QUICInitialLikeSource(pdl.HexFormat),
 		QUICRetrySource(pdl.HexFormat),
 		QUICShortHeaderSource(pdl.HexFormat),
+		QUICFrameListSource(),
 	}
 }

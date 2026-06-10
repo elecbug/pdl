@@ -34,4 +34,6 @@ var (
 	QUICInitialLike Packet = Packet{value: "QUICInitialLike"}
 	QUICRetry       Packet = Packet{value: "QUICRetry"}
 	QUICShort       Packet = Packet{value: "QUICShort"}
+	QUICFrame       Packet = Packet{value: "QUICFrame"}
+	QUICFrameList   Packet = Packet{value: "QUICFrameList"}
 )

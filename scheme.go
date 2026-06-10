@@ -35,7 +35,7 @@ func GenerateScheme(main Packet, sources ...Source) (*Scheme, error) {
 // It returns the extracted JSON output as an interface{} and an error if there is an issue with decoding the packet or extracting the JSON output.
 func (p *Scheme) ExtractJSON(packet []byte) (any, error) {
 	root := p.set.Root
-	result, err := decoder.Decode(root, packet)
+	result, err := decoder.DecodeWithSet(p.set, root, packet)
 	if err != nil {
 		return nil, err
 	}

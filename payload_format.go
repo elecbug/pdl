@@ -21,4 +21,5 @@ var (
 	IPv4Format       PayloadFormat = PayloadFormat{value: "IP4"}   // IPv4 format for IP addresses. e.g. 192.168.0.1
 	IPv6Format       PayloadFormat = PayloadFormat{value: "IP6"}   // IPv6 format for IP addresses. e.g. 2001:0db8:85a3:0000:0000:8a2e:0370:7334
 	MACAddressFormat PayloadFormat = PayloadFormat{value: "MAC"}   // MAC address format for network interfaces. e.g. 00:1A:2B:3C:4D:5E
+	ArrayFormat      PayloadFormat = PayloadFormat{value: "ARRAY"} // Array format for lists of values. e.g. [1, 2, 3]
 )

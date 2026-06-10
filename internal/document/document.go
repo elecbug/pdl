@@ -65,6 +65,25 @@ type Def struct {
 	UseSwitch bool
 	// Switch is the mapping of case values to their corresponding DefSwitch structures when UseSwitch is true.
 	Switch *DefSwitch
+
+	// Whether this field definition uses an array structure to define multiple instances of a field based on a count expression.
+	UseArray bool
+	// Array is the structure defining how to extract multiple instances of a field based on a count expression when UseArray is true.
+	Array *DefArray
+}
+
+// DefArray represents the structure of a field definition for an array of fields, defining how to determine the starting position and count of the fields in the array.
+type DefArray struct {
+	// The expression that evaluates to the starting bit position of the first field in the array within the input data.
+	From Expr
+
+	// The expression that evaluates to the number of fields in the array, which determines how many instances of the field to extract.
+	Count Expr
+	// Whether the Count expression should be used to determine the number of fields in the array.
+	CountToEnd bool
+
+	// The name of the packet structure that defines the layout of each field in the array, which should correspond to a packet defined in the document.
+	Packet string
 }
 
 // DefLayout represents the layout of a field definition for a specific case in a switch statement, defining how to determine the starting position,

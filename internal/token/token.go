@@ -23,6 +23,7 @@ const (
 	AS_KEYWORD      TokenType = "as"
 	DEFAULT_KEYWORD TokenType = "default"
 	SWITCH_KEYWORD  TokenType = "switch"
+	COUNT_KEYWORD   TokenType = "count"
 
 	EQUAL_SIGN         TokenType = "="
 	LBRACE_SIGN        TokenType = "{"
@@ -80,6 +81,7 @@ var keywords = map[string]TokenType{
 	"as":      AS_KEYWORD,
 	"default": DEFAULT_KEYWORD,
 	"switch":  SWITCH_KEYWORD,
+	"count":   COUNT_KEYWORD,
 }
 
 // LookupIdent returns a keyword token type when s is reserved; otherwise it

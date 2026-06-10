@@ -305,7 +305,31 @@ func (p *Parser) parseDefLine() (document.Def, error) {
 		return def, nil
 	}
 
-	layout, err := p.parseDefLayout()
+	if p.cur.Type != token.FROM_KEYWORD {
+		return document.Def{}, p.errf("expected from or switch in def line, got %s %q", p.cur.Type, p.cur.Lit)
+	}
+
+	if err := p.expect(token.FROM_KEYWORD); err != nil {
+		return document.Def{}, err
+	}
+
+	from, err := p.parseExpr(0)
+	if err != nil {
+		return document.Def{}, err
+	}
+
+	if p.cur.Type == token.COUNT_KEYWORD {
+		arr, err := p.parseDefArrayAfterFrom(from)
+		if err != nil {
+			return document.Def{}, err
+		}
+
+		def.UseArray = true
+		def.Array = arr
+		return def, nil
+	}
+
+	layout, err := p.parseDefLayoutAfterFrom(from)
 	if err != nil {
 		return document.Def{}, err
 	}
@@ -391,6 +415,11 @@ func (p *Parser) parseDefLayout() (document.DefLayout, error) {
 		return document.DefLayout{}, err
 	}
 
+	return p.parseDefLayoutAfterFrom(from)
+}
+
+// parseDefLayoutAfterFrom parses the part of a field layout specification that comes after the "from X" expression.
+func (p *Parser) parseDefLayoutAfterFrom(from document.Expr) (document.DefLayout, error) {
 	layout := document.DefLayout{
 		From: from,
 	}
@@ -419,10 +448,51 @@ func (p *Parser) parseDefLayout() (document.DefLayout, error) {
 		layout.UseTo = true
 
 	default:
-		return document.DefLayout{}, p.errf("expected length or to in def layout, got %s %q", p.cur.Type, p.cur.Lit)
+		return document.DefLayout{}, p.errf("expected length, to, or count in def layout, got %s %q", p.cur.Type, p.cur.Lit)
 	}
 
 	return layout, nil
+}
+
+// parseDefArrayAfterFrom parses the part of a field definition that specifies an array of fields, which comes after the "from X" expression.
+func (p *Parser) parseDefArrayAfterFrom(from document.Expr) (*document.DefArray, error) {
+	if err := p.expect(token.COUNT_KEYWORD); err != nil {
+		return nil, err
+	}
+
+	arr := &document.DefArray{
+		From: from,
+	}
+
+	if p.cur.Type == token.TO_KEYWORD {
+		p.next()
+
+		if err := p.expect(token.END_KEYWORD); err != nil {
+			return nil, err
+		}
+
+		arr.CountToEnd = true
+	} else {
+		count, err := p.parseExpr(0)
+		if err != nil {
+			return nil, err
+		}
+
+		arr.Count = count
+	}
+
+	if err := p.expect(token.AS_KEYWORD); err != nil {
+		return nil, err
+	}
+
+	if p.cur.Type != token.IDENT {
+		return nil, p.errf("expected packet name after as in array def, got %s %q", p.cur.Type, p.cur.Lit)
+	}
+
+	arr.Packet = p.cur.Lit
+	p.next()
+
+	return arr, nil
 }
 
 // parseOutBlock parses an out json block enclosed in braces.

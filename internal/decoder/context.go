@@ -9,6 +9,8 @@ import (
 // decodeContext holds the state during the decoding process, including the document, input data,
 // encoded values, and variables.
 type decodeContext struct {
+	// The set of documents available for decoding, which may include multiple packet definitions and a designated root document.
+	set *document.DocumentSet
 	// The document being decoded, containing definitions and variables.
 	doc *document.Document
 	// The input packet data to decode.
@@ -17,11 +19,19 @@ type decodeContext struct {
 	values map[string]Value
 	// A map of variable values, keyed by variable name.
 	vars map[string]int64
+	// A map of decoded array values, keyed by field name.
+	arrays map[string]ArrayValue
+	// The total number of bits consumed during decoding, used for tracking the current position in the input data.
+	consumedBits int64
 }
 
 // decodeDef decodes a single field definition from the document, extracting the specified bits from
 // the input data and storing the result in the context's values map.
 func (c *decodeContext) decodeDef(def document.Def) error {
+	if def.UseArray {
+		return c.decodeArray(def.Name, def.Array)
+	}
+
 	if def.UseSwitch {
 		layout, ok, err := c.resolveDefSwitchLayout(def)
 		if err != nil {
@@ -108,6 +118,11 @@ func (c *decodeContext) decodeLayout(name string, layout document.DefLayout) err
 		UInt: u,
 	}
 
+	end := from + length
+	if end > c.consumedBits {
+		c.consumedBits = end
+	}
+
 	return nil
 }
 
@@ -187,4 +202,105 @@ func (c *decodeContext) resolveDefSwitchLayout(def document.Def) (document.DefLa
 	}
 
 	return document.DefLayout{}, false, nil
+}
+
+// decodeArray decodes an array of fields based on the provided DefArray structure, which specifies
+// how to determine the starting position and count of the fields in the array.
+func (c *decodeContext) decodeArray(name string, arr *document.DefArray) error {
+	if arr == nil {
+		return fmt.Errorf("decode %s: missing array body", name)
+	}
+
+	if c.set == nil {
+		return fmt.Errorf("decode %s: array requires DocumentSet", name)
+	}
+
+	childDoc, ok := c.set.Documents[arr.Packet]
+	if !ok {
+		return fmt.Errorf("decode %s: unknown packet %q", name, arr.Packet)
+	}
+
+	from, err := c.evalExpr(arr.From)
+	if err != nil {
+		return fmt.Errorf("decode %s from: %w", name, err)
+	}
+
+	if from < 0 {
+		return fmt.Errorf("decode %s: from is negative: %d", name, from)
+	}
+
+	totalBits := int64(len(c.data)) * 8
+	if from > totalBits {
+		return fmt.Errorf("decode %s: from exceeds packet size: from=%d total=%d", name, from, totalBits)
+	}
+
+	var maxCount int64
+	if arr.CountToEnd {
+		maxCount = -1
+	} else {
+		maxCount, err = c.evalExpr(arr.Count)
+		if err != nil {
+			return fmt.Errorf("decode %s count: %w", name, err)
+		}
+		if maxCount < 0 {
+			return fmt.Errorf("decode %s: count is negative: %d", name, maxCount)
+		}
+	}
+
+	out := ArrayValue{
+		Name:   name,
+		Packet: arr.Packet,
+	}
+
+	offset := from
+	for i := int64(0); ; i++ {
+		if arr.CountToEnd {
+			if offset >= totalBits {
+				break
+			}
+		} else {
+			if i >= maxCount {
+				break
+			}
+			if offset >= totalBits {
+				return fmt.Errorf("decode %s[%d]: packet ended before count was satisfied", name, i)
+			}
+		}
+
+		remain := totalBits - offset
+		childBits, err := extractBits(c.data, offset, remain)
+		if err != nil {
+			return fmt.Errorf("decode %s[%d]: %w", name, i, err)
+		}
+
+		childResult, err := DecodeWithSet(c.set, childDoc, childBits)
+		if err != nil {
+			return fmt.Errorf("decode %s[%d] as %q: %w", name, i, arr.Packet, err)
+		}
+
+		if childResult.ConsumedBits <= 0 {
+			return fmt.Errorf("decode %s[%d] as %q: consumed zero bits", name, i, arr.Packet)
+		}
+
+		itemBits, err := extractBits(c.data, offset, childResult.ConsumedBits)
+		if err != nil {
+			return fmt.Errorf("decode %s[%d] item bits: %w", name, i, err)
+		}
+
+		out.Items = append(out.Items, ArrayItem{
+			Bits:   itemBits,
+			Len:    childResult.ConsumedBits,
+			Result: childResult,
+		})
+
+		offset += childResult.ConsumedBits
+	}
+
+	c.arrays[name] = out
+
+	if offset > c.consumedBits {
+		c.consumedBits = offset
+	}
+
+	return nil
 }

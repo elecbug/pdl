@@ -23,6 +23,34 @@ func BuildJSONWithSet(set *document.DocumentSet, root *document.Document, result
 
 		var outValue any
 
+		if arr, ok := result.Arrays[rule.Field]; ok {
+			if rule.Format != "" && rule.Format != "ARRAY" {
+				return nil, fmt.Errorf("array field %q only supports ARRAY format", rule.Field)
+			}
+
+			items := make([]any, 0, len(arr.Items))
+
+			for i, item := range arr.Items {
+				childDoc, ok := set.Documents[arr.Packet]
+				if !ok {
+					return nil, fmt.Errorf("unknown packet %q", arr.Packet)
+				}
+
+				childJSON, err := BuildJSONWithSet(set, childDoc, item.Result)
+				if err != nil {
+					return nil, fmt.Errorf("%w in %q[%d]", err, arr.Packet, i)
+				}
+
+				items = append(items, childJSON)
+			}
+
+			if err := setJSONPath(&res, rule.Path, items); err != nil {
+				return nil, err
+			}
+
+			continue
+		}
+
 		if rule.UseAsSwitch {
 			target, err := decoder.ResolveOutAsSwitch(root, result, rule)
 			if err != nil {
@@ -41,7 +69,7 @@ func BuildJSONWithSet(set *document.DocumentSet, root *document.Document, result
 					return nil, fmt.Errorf("unknown packet %q", target)
 				}
 
-				childResult, err := decoder.Decode(childDoc, value.Bits)
+				childResult, err := decoder.DecodeWithSet(set, childDoc, value.Bits)
 				if err != nil {
 					return nil, fmt.Errorf("%w in %q", err, target)
 				}
@@ -59,7 +87,7 @@ func BuildJSONWithSet(set *document.DocumentSet, root *document.Document, result
 				return nil, fmt.Errorf("unknown packet %q", rule.AsPacket)
 			}
 
-			childResult, err := decoder.Decode(childDoc, value.Bits)
+			childResult, err := decoder.DecodeWithSet(set, childDoc, value.Bits)
 			if err != nil {
 				return nil, fmt.Errorf("%w in %q", err, rule.AsPacket)
 			}

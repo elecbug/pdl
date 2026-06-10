@@ -22,21 +22,55 @@ type Value struct {
 	Mode string
 }
 
-// Result represents the outcome of the decoding process, containing a map of decoded field values
-// keyed by their names.
-type Result struct {
-	// A map of decoded field values, keyed by field name.
-	Values map[string]Value
+// ArrayValue represents a decoded array of fields, including the name of the array, the packet type of each item,
+type ArrayValue struct {
+	// The name of the array field, as defined in the document.
+	Name string
+	// The packet type of each item in the array, which should correspond to a packet defined in the document.
+	Packet string
+	// The list of decoded items in the array, where each item includes its raw bits, length in bits, and decoded result.
+	Items []ArrayItem
 }
 
-// Decode takes a document and input data, and returns the decoded result or an error if the decoding
-// process fails. It initializes a DecodeContext, evaluates any variables defined in the document,
-// and then decodes each field definition according to the specified rules.
+// ArrayItem represents a single item in a decoded array, including its raw bits, length in bits, and decoded result.
+type ArrayItem struct {
+	// The raw bits of the decoded item, extracted from the input data.
+	Bits []byte
+	// The length of the decoded item in bits.
+	Len int64
+	// The decoded result of the item, which is a mapping of field names to their corresponding decoded values.
+	Result *Result
+}
+
+// Result represents the overall result of the decoding process, including a mapping of field names to their decoded values,
+// a mapping of array field names to their decoded array values, and the total number of bits consumed during decoding.
+type Result struct {
+	// A mapping of field names to their corresponding decoded values, where each value includes the raw bits, length in bits, unsigned integer value, and output mode.
+	Values map[string]Value
+	// A mapping of array field names to their corresponding decoded array values, where each array value includes the packet type and list of decoded items.
+	Arrays map[string]ArrayValue
+	// The total number of bits consumed during the decoding process, which can be used for tracking the position in the input data.
+	ConsumedBits int64
+}
+
+// Decode takes a Document and input data as a byte slice, and returns the decoded Result or an error if decoding fails.
 func Decode(doc *document.Document, data []byte) (*Result, error) {
+	return decode(nil, doc, data)
+}
+
+// DecodeWithSet takes a DocumentSet, a Document, and input data as a byte slice, and returns the decoded Result or an error if decoding fails.
+func DecodeWithSet(set *document.DocumentSet, doc *document.Document, data []byte) (*Result, error) {
+	return decode(set, doc, data)
+}
+
+// decode is the internal function that performs the actual decoding logic, using the provided DocumentSet, Document, and input data.
+func decode(set *document.DocumentSet, doc *document.Document, data []byte) (*Result, error) {
 	ctx := &decodeContext{
+		set:    set,
 		doc:    doc,
 		data:   data,
 		values: make(map[string]Value),
+		arrays: make(map[string]ArrayValue),
 		vars:   make(map[string]int64),
 	}
 
@@ -56,6 +90,8 @@ func Decode(doc *document.Document, data []byte) (*Result, error) {
 	}
 
 	return &Result{
-		Values: ctx.values,
+		Values:       ctx.values,
+		Arrays:       ctx.arrays,
+		ConsumedBits: ctx.consumedBits,
 	}, nil
 }
