@@ -2,6 +2,7 @@ package lexer
 
 import (
 	"fmt"
+	"strings"
 
 	"unicode"
 
@@ -11,6 +12,9 @@ import (
 // Lexer is responsible for tokenizing the input PDL source code. It reads the input string and produces
 // a stream of tokens that can be consumed by the parser.
 type Lexer struct {
+	// The name of the packet being parsed, used for error reporting and context. It can be set by the
+	// parser when it creates a lexer for a specific packet definition.
+	packet string
 	// The input source code as a slice of runes, allowing for proper handling of Unicode characters.
 	input []rune
 	// The current position in the input (index of the next character to read).
@@ -24,11 +28,27 @@ type Lexer struct {
 
 // New creates a Lexer and initializes line and column counters to 1.
 func New(input string) *Lexer {
-	return &Lexer{
+	lexer := &Lexer{
 		input: []rune(input),
 		line:  1,
 		col:   1,
 	}
+
+	for _, line := range strings.Split(input, "\n") {
+		if strings.HasPrefix(line, "packet") {
+			parts := strings.Fields(line)
+			if len(parts) >= 2 {
+				lexer.packet = parts[1]
+			}
+		}
+	}
+
+	return lexer
+}
+
+// Packet returns the name of the packet being parsed, which is used for error reporting and context.
+func (l *Lexer) Packet() string {
+	return l.packet
 }
 
 // NextToken reads the next token from the input and returns it. It handles whitespace, comments, identifiers,

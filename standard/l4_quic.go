@@ -88,10 +88,6 @@ def {
     length_prefix      from (56 + *dcid_len * 8 + *scid_len * 8 + (8 << *token_len_prefix) + *token_len * 8) length 2
     len                from (56 + *dcid_len * 8 + *scid_len * 8 + (8 << *token_len_prefix) + *token_len * 8 + 2) length ((8 << *length_prefix) - 2)
 
-    /*
-     * QUIC packet number length is header-protected.
-     * Without removing header protection, this is only the raw low 2 bits.
-     */
     packet_number      from (56 + *dcid_len * 8 + *scid_len * 8 + (8 << *token_len_prefix) + *token_len * 8 + (8 << *length_prefix)) length ((*packet_number_len_raw + 1) * 8)
 
     payload            from (56 + *dcid_len * 8 + *scid_len * 8 + (8 << *token_len_prefix) + *token_len * 8 + (8 << *length_prefix) + ((*packet_number_len_raw + 1) * 8)) to end

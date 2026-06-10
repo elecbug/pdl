@@ -16,13 +16,6 @@ func BuildJSONWithSet(set *document.DocumentSet, root *document.Document, result
 	res := map[string]any{}
 
 	for _, rule := range root.Outs {
-		value, ok := result.Values[rule.Field]
-		if !ok {
-			return nil, fmt.Errorf("output field %q is not decoded", rule.Field)
-		}
-
-		var outValue any
-
 		if arr, ok := result.Arrays[rule.Field]; ok {
 			if rule.Format != "" && rule.Format != "ARRAY" {
 				return nil, fmt.Errorf("array field %q only supports ARRAY format", rule.Field)
@@ -50,6 +43,13 @@ func BuildJSONWithSet(set *document.DocumentSet, root *document.Document, result
 
 			continue
 		}
+
+		value, ok := result.Values[rule.Field]
+		if !ok {
+			return nil, fmt.Errorf("output field %q is not decoded", rule.Field)
+		}
+
+		var outValue any
 
 		if rule.UseAsSwitch {
 			target, err := decoder.ResolveOutAsSwitch(root, result, rule)
