@@ -59,6 +59,11 @@ func (l *Lexer) NextToken() token.Token {
 		l.advance()
 		return token.Token{Type: token.RPAREN_SIGN, Lit: ")", Line: startLine, Col: startCol}
 	case '<':
+		if l.peekN(1) == '<' {
+			l.advance()
+			l.advance()
+			return token.Token{Type: token.LSHIFT_SIGN, Lit: "<<", Line: startLine, Col: startCol}
+		}
 		if l.peekN(1) == '=' {
 			l.advance()
 			l.advance()
@@ -67,6 +72,11 @@ func (l *Lexer) NextToken() token.Token {
 		l.advance()
 		return token.Token{Type: token.LANGLE_SIGN, Lit: "<", Line: startLine, Col: startCol}
 	case '>':
+		if l.peekN(1) == '>' {
+			l.advance()
+			l.advance()
+			return token.Token{Type: token.RSHIFT_SIGN, Lit: ">>", Line: startLine, Col: startCol}
+		}
 		if l.peekN(1) == '=' {
 			l.advance()
 			l.advance()
@@ -74,6 +84,28 @@ func (l *Lexer) NextToken() token.Token {
 		}
 		l.advance()
 		return token.Token{Type: token.RANGLE_SIGN, Lit: ">", Line: startLine, Col: startCol}
+	case '&':
+		if l.peekN(1) == '&' {
+			l.advance()
+			l.advance()
+			return token.Token{Type: token.AND_AND_SIGN, Lit: "&&", Line: startLine, Col: startCol}
+		}
+		l.advance()
+		return token.Token{Type: token.BIT_AND_SIGN, Lit: "&", Line: startLine, Col: startCol}
+	case '|':
+		if l.peekN(1) == '|' {
+			l.advance()
+			l.advance()
+			return token.Token{Type: token.OR_OR_SIGN, Lit: "||", Line: startLine, Col: startCol}
+		}
+		l.advance()
+		return token.Token{Type: token.BIT_OR_SIGN, Lit: "|", Line: startLine, Col: startCol}
+	case '^':
+		l.advance()
+		return token.Token{Type: token.BIT_XOR_SIGN, Lit: "^", Line: startLine, Col: startCol}
+	case '%':
+		l.advance()
+		return token.Token{Type: token.PERCENT_SIGN, Lit: "%", Line: startLine, Col: startCol}
 	case '=':
 		if l.peekN(1) == '=' {
 			l.advance()
@@ -87,18 +119,6 @@ func (l *Lexer) NextToken() token.Token {
 			l.advance()
 			l.advance()
 			return token.Token{Type: token.NOT_EQUAL_SIGN, Lit: "!=", Line: startLine, Col: startCol}
-		}
-	case '&':
-		if l.peekN(1) == '&' {
-			l.advance()
-			l.advance()
-			return token.Token{Type: token.AND_AND_SIGN, Lit: "&&", Line: startLine, Col: startCol}
-		}
-	case '|':
-		if l.peekN(1) == '|' {
-			l.advance()
-			l.advance()
-			return token.Token{Type: token.OR_OR_SIGN, Lit: "||", Line: startLine, Col: startCol}
 		}
 	case '*':
 		l.advance()

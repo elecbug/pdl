@@ -43,6 +43,12 @@ const (
 	NOT_EQUAL_SIGN     TokenType = "!="
 	AND_AND_SIGN       TokenType = "&&"
 	OR_OR_SIGN         TokenType = "||"
+	PERCENT_SIGN       TokenType = "%"
+	BIT_AND_SIGN       TokenType = "&"
+	BIT_OR_SIGN        TokenType = "|"
+	BIT_XOR_SIGN       TokenType = "^"
+	LSHIFT_SIGN        TokenType = "<<"
+	RSHIFT_SIGN        TokenType = ">>"
 )
 
 // Token represents one lexical token, including its type, literal text,

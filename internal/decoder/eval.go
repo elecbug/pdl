@@ -67,7 +67,6 @@ func evalBinary(op string, left, right int64) (int64, error) {
 			return 0, fmt.Errorf("division by zero")
 		}
 		return left / right, nil
-
 	case "<":
 		return boolToInt(left < right), nil
 	case ">":
@@ -84,7 +83,27 @@ func evalBinary(op string, left, right int64) (int64, error) {
 		return boolToInt(left != 0 && right != 0), nil
 	case "||":
 		return boolToInt(left != 0 || right != 0), nil
-
+	case "%":
+		if right == 0 {
+			return 0, fmt.Errorf("modulo by zero")
+		}
+		return left % right, nil
+	case "&":
+		return left & right, nil
+	case "|":
+		return left | right, nil
+	case "^":
+		return left ^ right, nil
+	case "<<":
+		if right < 0 {
+			return 0, fmt.Errorf("negative left shift count")
+		}
+		return left << uint(right), nil
+	case ">>":
+		if right < 0 {
+			return 0, fmt.Errorf("negative right shift count")
+		}
+		return left >> uint(right), nil
 	default:
 		return 0, fmt.Errorf("unknown operator %q", op)
 	}
@@ -125,61 +144,7 @@ func evalExprWithEnv(env exprEnv, expr document.Expr) (int64, error) {
 			return 0, err
 		}
 
-		switch e.Op {
-		case "<":
-			if left < right {
-				return 1, nil
-			}
-			return 0, nil
-		case ">":
-			if left > right {
-				return 1, nil
-			}
-			return 0, nil
-		case "<=":
-			if left <= right {
-				return 1, nil
-			}
-			return 0, nil
-		case ">=":
-			if left >= right {
-				return 1, nil
-			}
-			return 0, nil
-		case "==":
-			if left == right {
-				return 1, nil
-			}
-			return 0, nil
-		case "!=":
-			if left != right {
-				return 1, nil
-			}
-			return 0, nil
-		case "&&":
-			if left != 0 && right != 0 {
-				return 1, nil
-			}
-			return 0, nil
-		case "||":
-			if left != 0 || right != 0 {
-				return 1, nil
-			}
-			return 0, nil
-		case "+":
-			return left + right, nil
-		case "-":
-			return left - right, nil
-		case "*":
-			return left * right, nil
-		case "/":
-			if right == 0 {
-				return 0, fmt.Errorf("division by zero")
-			}
-			return left / right, nil
-		default:
-			return 0, fmt.Errorf("unknown operator %q", e.Op)
-		}
+		return evalBinary(e.Op, left, right)
 
 	default:
 		return 0, fmt.Errorf("unknown expression type %T", expr)
