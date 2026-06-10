@@ -1,9 +1,6 @@
 package standard
 
 import (
-	"fmt"
-	"strings"
-
 	"github.com/elecbug/pdl"
 )
 
@@ -61,9 +58,6 @@ out json {
 }
 
 func QUICInitialLikeSource(payload pdl.PayloadFormat) pdl.Source {
-	packetNumberSwitch := buildPacketNumberSwitch()
-	payloadSwitch := buildPayloadSwitch()
-
 	return pdl.NewSource(`
 packet ` + pdl.QUICInitialLike.String() + `
 
@@ -87,53 +81,16 @@ def {
     scid               from (56 + *dcid_len * 8) length (*scid_len * 8)
 
     token_len_prefix   from (56 + *dcid_len * 8 + *scid_len * 8) length 2
+    token_len          from (56 + *dcid_len * 8 + *scid_len * 8 + 2) length ((8 << *token_len_prefix) - 2)
 
-    token_len switch *token_len_prefix {
-        0 : from (56 + *dcid_len * 8 + *scid_len * 8 + 2) length 6
-        1 : from (56 + *dcid_len * 8 + *scid_len * 8 + 2) length 14
-        2 : from (56 + *dcid_len * 8 + *scid_len * 8 + 2) length 30
-        3 : from (56 + *dcid_len * 8 + *scid_len * 8 + 2) length 62
-    }
+    token              from (56 + *dcid_len * 8 + *scid_len * 8 + (8 << *token_len_prefix)) length (*token_len * 8)
 
-    token switch *token_len_prefix {
-        0 : from (56 + *dcid_len * 8 + *scid_len * 8 + 8)  length (*token_len * 8)
-        1 : from (56 + *dcid_len * 8 + *scid_len * 8 + 16) length (*token_len * 8)
-        2 : from (56 + *dcid_len * 8 + *scid_len * 8 + 32) length (*token_len * 8)
-        3 : from (56 + *dcid_len * 8 + *scid_len * 8 + 64) length (*token_len * 8)
-    }
+    length_prefix      from (56 + *dcid_len * 8 + *scid_len * 8 + (8 << *token_len_prefix) + *token_len * 8) length 2
+    len                from (56 + *dcid_len * 8 + *scid_len * 8 + (8 << *token_len_prefix) + *token_len * 8 + 2) length ((8 << *length_prefix) - 2)
 
-    length_prefix switch *token_len_prefix {
-        0 : from (56 + *dcid_len * 8 + *scid_len * 8 + 8  + *token_len * 8) length 2
-        1 : from (56 + *dcid_len * 8 + *scid_len * 8 + 16 + *token_len * 8) length 2
-        2 : from (56 + *dcid_len * 8 + *scid_len * 8 + 32 + *token_len * 8) length 2
-        3 : from (56 + *dcid_len * 8 + *scid_len * 8 + 64 + *token_len * 8) length 2
-    }
+    packet_number      from (56 + *dcid_len * 8 + *scid_len * 8 + (8 << *token_len_prefix) + *token_len * 8 + (8 << *length_prefix)) length ((*packet_number_len + 1) * 8)
 
-    len switch *length_prefix {
-        val == 0 && *token_len_prefix == 0 : from (56 + *dcid_len * 8 + *scid_len * 8 + 8  + *token_len * 8 + 2) length 6
-        val == 1 && *token_len_prefix == 0 : from (56 + *dcid_len * 8 + *scid_len * 8 + 8  + *token_len * 8 + 2) length 14
-        val == 2 && *token_len_prefix == 0 : from (56 + *dcid_len * 8 + *scid_len * 8 + 8  + *token_len * 8 + 2) length 30
-        val == 3 && *token_len_prefix == 0 : from (56 + *dcid_len * 8 + *scid_len * 8 + 8  + *token_len * 8 + 2) length 62
-
-        val == 0 && *token_len_prefix == 1 : from (56 + *dcid_len * 8 + *scid_len * 8 + 16 + *token_len * 8 + 2) length 6
-        val == 1 && *token_len_prefix == 1 : from (56 + *dcid_len * 8 + *scid_len * 8 + 16 + *token_len * 8 + 2) length 14
-        val == 2 && *token_len_prefix == 1 : from (56 + *dcid_len * 8 + *scid_len * 8 + 16 + *token_len * 8 + 2) length 30
-        val == 3 && *token_len_prefix == 1 : from (56 + *dcid_len * 8 + *scid_len * 8 + 16 + *token_len * 8 + 2) length 62
-
-        val == 0 && *token_len_prefix == 2 : from (56 + *dcid_len * 8 + *scid_len * 8 + 32 + *token_len * 8 + 2) length 6
-        val == 1 && *token_len_prefix == 2 : from (56 + *dcid_len * 8 + *scid_len * 8 + 32 + *token_len * 8 + 2) length 14
-        val == 2 && *token_len_prefix == 2 : from (56 + *dcid_len * 8 + *scid_len * 8 + 32 + *token_len * 8 + 2) length 30
-        val == 3 && *token_len_prefix == 2 : from (56 + *dcid_len * 8 + *scid_len * 8 + 32 + *token_len * 8 + 2) length 62
-
-        val == 0 && *token_len_prefix == 3 : from (56 + *dcid_len * 8 + *scid_len * 8 + 64 + *token_len * 8 + 2) length 6
-        val == 1 && *token_len_prefix == 3 : from (56 + *dcid_len * 8 + *scid_len * 8 + 64 + *token_len * 8 + 2) length 14
-        val == 2 && *token_len_prefix == 3 : from (56 + *dcid_len * 8 + *scid_len * 8 + 64 + *token_len * 8 + 2) length 30
-        val == 3 && *token_len_prefix == 3 : from (56 + *dcid_len * 8 + *scid_len * 8 + 64 + *token_len * 8 + 2) length 62
-    }
-
-` + packetNumberSwitch + `
-
-` + payloadSwitch + `
+    payload            from (56 + *dcid_len * 8 + *scid_len * 8 + (8 << *token_len_prefix) + *token_len * 8 + (8 << *length_prefix) + ((*packet_number_len + 1) * 8)) to end
 }
 
 out json {
@@ -200,7 +157,7 @@ def {
 
     token_start        from (56 + *dcid_len * 8 + *scid_len * 8) length 0
 
-    retry_token         from *token_start to (end - 128)
+    retry_token         from (56 + *dcid_len * 8 + *scid_len * 8) to (end - 128)
     retry_integrity_tag from (end - 127) to end
 }
 
@@ -278,68 +235,4 @@ out json {
     payload           short_header.payload ` + payload.String() + `
 }
 `)
-}
-
-func buildPacketNumberSwitch() string {
-	var sb strings.Builder
-
-	sb.WriteString(`
-    packet_number switch *packet_number_len {
-`)
-
-	tokenLenBits := []int{8, 16, 32, 64}
-	lengthBits := []int{8, 16, 32, 64}
-	pnBits := []int{8, 16, 24, 32}
-
-	for tpIdx, tokenLenBit := range tokenLenBits {
-		for lpIdx, lengthBit := range lengthBits {
-			for pnIdx, pnBit := range pnBits {
-				sb.WriteString(fmt.Sprintf(
-					`        val == %d && *token_len_prefix == %d && *length_prefix == %d : from (56 + *dcid_len * 8 + *scid_len * 8 + %d + *token_len * 8 + %d) length %d
-`,
-					pnIdx,
-					tpIdx,
-					lpIdx,
-					tokenLenBit,
-					lengthBit,
-					pnBit,
-				))
-			}
-		}
-	}
-
-	sb.WriteString("    }\n")
-	return sb.String()
-}
-
-func buildPayloadSwitch() string {
-	var sb strings.Builder
-
-	sb.WriteString(`
-    payload switch *packet_number_len {
-`)
-
-	tokenLenBits := []int{8, 16, 32, 64}
-	lengthBits := []int{8, 16, 32, 64}
-	pnBits := []int{8, 16, 24, 32}
-
-	for tpIdx, tokenLenBit := range tokenLenBits {
-		for lpIdx, lengthBit := range lengthBits {
-			for pnIdx, pnBit := range pnBits {
-				sb.WriteString(fmt.Sprintf(
-					`        val == %d && *token_len_prefix == %d && *length_prefix == %d : from (56 + *dcid_len * 8 + *scid_len * 8 + %d + *token_len * 8 + %d + %d) to end
-`,
-					pnIdx,
-					tpIdx,
-					lpIdx,
-					tokenLenBit,
-					lengthBit,
-					pnBit,
-				))
-			}
-		}
-	}
-
-	sb.WriteString("    }\n")
-	return sb.String()
 }
