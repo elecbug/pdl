@@ -97,17 +97,6 @@ var keywords = map[string]TokenType{
 	"default": DEFAULT_KEYWORD,
 	"switch":  SWITCH_KEYWORD,
 	"count":   COUNT_KEYWORD,
-
-	"HEX":   HEX_FORMAT,
-	"DEC":   DEC_FORMAT,
-	"BIN":   BIN_FORMAT,
-	"BOOL":  BOOL_FORMAT,
-	"ASCII": ASCII_FORMAT,
-	"UTF8":  UTF8_FORMAT,
-	"IP4":   IP4_FORMAT,
-	"IP6":   IP6_FORMAT,
-	"MAC":   MAC_FORMAT,
-	"ARRAY": ARRAY_FORMAT,
 }
 
 // LookupIdent returns a keyword token type when s is reserved; otherwise it
