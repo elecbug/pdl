@@ -107,7 +107,20 @@ var {
 -
 *
 /
+%
 ()
+
+<<
+>>
+|
+&
+^
+!
+
+||
+&&
+==
+!=
 ```
 
 예시:
@@ -367,7 +380,19 @@ out json {
 }
 ```
 
-혹은 `as switch {...`로 `val` 부분을 사용하지 않을 수도 있다.
+혹은 `as switch {...`의 형태로 selector를 지정하지 않고 `val` 부분을 사용하지 않을 수도 있다.
+
+
+```pdl
+out json {
+    ...
+
+    payload udp.payload as switch {
+        *dst_port == 443 || *src_port == 443 : QUIC
+        default                              : HEX
+    }
+}
+```
 
 ---
 
