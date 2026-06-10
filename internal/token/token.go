@@ -2,6 +2,10 @@ package token
 
 type TokenType string
 
+func (t TokenType) String() string {
+	return string(t)
+}
+
 const (
 	EOF     TokenType = "EOF"
 	ILLEGAL TokenType = "ILLEGAL"
@@ -24,6 +28,17 @@ const (
 	DEFAULT_KEYWORD TokenType = "default"
 	SWITCH_KEYWORD  TokenType = "switch"
 	COUNT_KEYWORD   TokenType = "count"
+
+	HEX_FORMAT   TokenType = "HEX"
+	DEC_FORMAT   TokenType = "DEC"
+	BIN_FORMAT   TokenType = "BIN"
+	BOOL_FORMAT  TokenType = "BOOL"
+	ASCII_FORMAT TokenType = "ASCII"
+	UTF8_FORMAT  TokenType = "UTF8"
+	IP4_FORMAT   TokenType = "IP4"
+	IP6_FORMAT   TokenType = "IP6"
+	MAC_FORMAT   TokenType = "MAC"
+	ARRAY_FORMAT TokenType = "ARRAY"
 
 	EQUAL_SIGN         TokenType = "="
 	LBRACE_SIGN        TokenType = "{"
@@ -82,6 +97,17 @@ var keywords = map[string]TokenType{
 	"default": DEFAULT_KEYWORD,
 	"switch":  SWITCH_KEYWORD,
 	"count":   COUNT_KEYWORD,
+
+	"HEX":   HEX_FORMAT,
+	"DEC":   DEC_FORMAT,
+	"BIN":   BIN_FORMAT,
+	"BOOL":  BOOL_FORMAT,
+	"ASCII": ASCII_FORMAT,
+	"UTF8":  UTF8_FORMAT,
+	"IP4":   IP4_FORMAT,
+	"IP6":   IP6_FORMAT,
+	"MAC":   MAC_FORMAT,
+	"ARRAY": ARRAY_FORMAT,
 }
 
 // LookupIdent returns a keyword token type when s is reserved; otherwise it
