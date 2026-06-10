@@ -46,8 +46,8 @@ func New(input string) *Lexer {
 	return lexer
 }
 
-// Packet returns the name of the packet being parsed, which is used for error reporting and context.
-func (l *Lexer) Packet() string {
+// PacketTitle returns the name of the packet being parsed, which is used for error reporting and context.
+func (l *Lexer) PacketTitle() string {
 	return l.packet
 }
 
